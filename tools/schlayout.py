@@ -34,7 +34,10 @@ def global_nets():
         for n in c.nets.values():
             if n:
                 seen.setdefault(n, set()).add(c.sheet)
-    return {n for n, sh in seen.items() if len(sh) > 1}
+    # ... and so does everything on the headers: a column of pin names reads
+    # better as sixteen flags than as flags and bare names mixed
+    hdr = {n for c in CIR.board() if c.ref in ("J2", "J3") for n in c.nets.values() if n}
+    return {n for n, sh in seen.items() if len(sh) > 1} | hdr
 
 
 def notes(*paras, width=64):
@@ -118,8 +121,8 @@ def mcu(s):
         s.place(ref, x, 13.5, fields="right")
 
     # the flash
-    s.block("QSPI flash", 3, 32, 24, 53)
-    f = s.place("U3", 19, 44, fields=(-3, 6.2, "left"))
+    s.block("QSPI flash", 3, 32, 26, 54)
+    f = s.place("U3", 19, 44, fields=(1.5, 6.5, "left"))
     for n in ("6", "5", "2", "3", "7"):
         s.label(f[n], stub=2)
     s.wire(f["1"], (11, 41))
@@ -141,30 +144,30 @@ def mcu(s):
     s.place("R4", 8, 69.5, fields="left")
 
     # debug connector, LED
-    s.block("SWD", 30, 62, 46, 73)
-    j = s.place("J4", 41, 67, fields="above")
-    for n in ("1", "3"):
-        s.label(j[n], stub=1)
-    s.power(j["2"], "GND", stub=3)
-    s.block("LED", 50, 62, 68, 73)
-    s.place("R9", 56, 68, rot=270, fields="above")
+    s.block("SWD", 30, 77, 50, 90)
+    j = s.place("J4", 43, 83, fields=(2, -1, "left"))
+    s.label(j["1"], stub=2)
+    s.label(j["3"], stub=2)
+    s.wire(j["2"], (36, 83), (36, 86))
+    s.power(s.g(36, 86), "GND")
+    s.block("LED", 54, 77, 74, 90)
+    s.place("R9", 62, 81, rot=270, fields="above")
     s.label(s["R9"]["1"], stub=1, d=(1, 0))
-    d = s.place("D3", 53, 71, rot=90, fields="right")
-    s.wire(s["R9"]["2"], (53, 68), d["2"])
+    d = s.place("D3", 58, 84.5, rot=90, fields="right")
+    s.wire(s["R9"]["2"], (58, 81), d["2"])
 
     # headers
-    s.block("Headers, 0.9 in apart", 108, 9, 150, 44)
-    a = s.place("J2", 122, 26, fields="above")
-    c = s.place("J3", 143, 26, fields="above")
+    s.block("Headers, 0.9 in apart", 108, 12, 150, 40)
+    a = s.place("J2", 124, 27, fields=(-1, -9.5, "left"))
+    c = s.place("J3", 145, 27, fields=(-1, -9.5, "left"))
     for part in (a, c):
         for p in part.pins.values():
-            if p.net in ("GND", "+3V3", "+1V8", "VBUS"):
-                s.power(p, stub=2)
-            else:
-                s.label(p, stub=1)
-    s.block("Mounting holes, M2.5", 108, 50, 150, 60)
+            # the rails as flags too: sixteen names in a column read better
+            # than names with supply symbols poking out between them
+            s.label(p, stub=1, kind="global_label")
+    s.block("Mounting holes, M2.5", 108, 46, 150, 56)
     for k in range(4):
-        s.place(f"H{k + 1}", 114 + 9 * k, 55, fields="below")
+        s.place(f"H{k + 1}", 114 + 9 * k, 51, fields="below")
 
     s.text(notes(
         "The RP2350A, its core regulator, crystal, flash and decoupling are Raspberry Pi's "
@@ -175,12 +178,12 @@ def mcu(s):
         "TXD/RXD (UART0). 18/19 configuration bus (I2C1). 20 translator enable. "
         "21-24, 26-29 left-hand header. 25 LED.",
         "The headers carry the 3.3 V side of every line the ST60 takes from a host, so a "
-        "host that is not the RP2350 can run the link."), 108, 64, size=1.27)
+        "host that is not the RP2350 can run the link."), 108, 60, size=1.27)
 
 
 # ------------------------------------------------------------------- link ---
 def link(s):
-    s.block("eUSB2 repeater", 14, 24, 42, 52)
+    s.block("eUSB2 repeater", 10, 24, 42, 52)
     p = s.place("U5", 30, 40, fields=(1.5, 6.3, "left"))
     s.wire(p["12"], (29.5, 31), (22, 31))
     s.place("C26", 26, 32.5, fields="left")
@@ -194,7 +197,8 @@ def link(s):
     s.power(s.g(30, 46), "GND")
     for n in ("9", "8", "5", "7", "6"):
         s.label(p[n], stub=1)
-    s.power(p["11"], "+1V8", stub=2)
+    # ADDR on +1V8: address 0x43
+    s.wire(p["11"], (13, 43), (13, 31), (22, 31))
 
     s.block("ST60A3H1", 46, 24, 96, 52)
     u = s.place("U4", 60, 42, fields=(-7.5, 7.8, "left"))
@@ -206,10 +210,10 @@ def link(s):
     # its supply: +1V8 through the 0 R link
     s.wire(u["C3"], (59.5, 30))
     s.wire(u["L3"], (60.5, 30))
-    s.wire((55, 30), (69, 30))
+    s.wire((55, 30), (72, 30))
     s.place("R20", 53.5, 30, rot=90, fields="above")
     s.power(s["R20"]["1"], "+1V8", stub=1)
-    for ref, x in (("C21", 63), ("C22", 66), ("C23", 69)):
+    for ref, x in (("C21", 64), ("C22", 68), ("C23", 72)):
         s.place(ref, x, 31.5, fields="right")
     s.flag(s.g(57, 30), "ST_VDD", stub=1)
     for n in ("E1", "F1", "G1", "J1", "B2", "D1", "K1", "M2"):
@@ -224,13 +228,13 @@ def link(s):
     t = s.place("U6", 118, 38, fields=(1.5, 8.3, "left"))
     for q in t.pins.values():
         if q.num not in ("2", "19", "11"):
-            s.label(q, stub=1)
-    s.wire(t["2"], (117, 29), (114, 29))
-    s.place("C24", 114, 30.5, fields="left")
-    s.power(s.g(117, 29), "+1V8")
-    s.wire(t["19"], (119, 29), (122, 29))
-    s.place("C25", 122, 30.5, fields="right")
-    s.power(s.g(119, 29), "+3V3")
+            s.label(q, stub=6 if q.num == "10" else 1)      # OE's flag clear of A1's name
+    s.wire(t["2"], (117, 28), (109, 28))
+    s.place("C24", 109, 29.5, fields="left")
+    s.power(s.g(113, 28), "+1V8")
+    s.wire(t["19"], (119, 28), (127, 28))
+    s.place("C25", 127, 29.5, fields="right")
+    s.power(s.g(123, 28), "+3V3")
     s.place("R28", 132, 47.5, fields="right")
 
     s.block("Link LED", 46, 54, 96, 73)
@@ -284,17 +288,17 @@ def usb_power(s):
     for n in ("1", "3", "4", "6"):
         s.label(e[n], stub=1)
 
-    for ref, cap, pd, x, title in (("U9", "C30", "R12", 76, "Switch: connector side"),
-                                   ("U10", "C31", "R13", 118, "Switch: RP2350 side")):
-        s.block(title, x - 14, 26, x + 24, 60)
+    for ref, cap, pd, x, title in (("U9", "C30", "R12", 80, "Switch: connector side"),
+                                   ("U10", "C31", "R13", 120, "Switch: RP2350 side")):
+        s.block(title, x - 16, 26, x + 20, 60)
         u = s.place(ref, x, 40, fields=(1, 5.2, "left"))
         for n in ("8", "7", "9", "1", "2", "3", "4"):
             s.label(u[n], stub=1)
         s.power(u["6"], "GND", stub=1)
-        s.wire(u["10"], (x, 34), (x + 4, 34))
-        s.power(s.g(x, 34), "+3V3")
-        s.place(cap, x + 4, 35.5, fields="right")
-        s.place(pd, x + 16, 53.5, fields="right")
+        s.wire(u["10"], (x, 31), (x + 5, 31))
+        s.power(s.g(x, 31), "+3V3")
+        s.place(cap, x + 5, 32.5, fields="right")
+        s.place(pd, x + 12, 51.5, fields="right")
 
     s.block("3.3 V", 8, 66, 66, 88)
     r = s.place("U2", 40, 75, fields="above")
@@ -330,7 +334,7 @@ def usb_power(s):
         "MCU high: RP2350 to repeater -- the RP2350 is the device at the far end.",
         "Both high joins all three and is not a state to use.",
         "ST_PWR_EN low turns the 1.8 V regulator off; it discharges its output, which is "
-        "a power-on reset for the ST60A3H1."), 146, 28, size=1.27)
+        "a power-on reset for the ST60A3H1."), 8, 93, size=1.27)
 
 
 SHEETS = {"01_mcu": mcu, "02_link": link, "03_usb_power": usb_power}

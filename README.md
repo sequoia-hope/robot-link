@@ -1,5 +1,7 @@
 # robot-link (comms)
 
+### ▶ [Project page: schematic, PCB and 3D viewer](https://sequoia-hope.github.io/robot-link/)
+
 A dev board for ST's 60 GHz contactless link: an **RP2350A** beside an
 **ST60A3H1** (antenna in the package), 28 × 63 mm, four layers. Two boards
 face each other a few centimetres apart and tunnel UART, GPIO, I²C or
@@ -11,8 +13,9 @@ and ERC report nothing, and KiCad's own netlist of the drawn schematic matches
 before ordering: LCSC numbers for every part, assembly drawings, a review
 pass over the layout, and the firmware that would prove the pin map.
 
-- `index.html` — status page with the board viewer (SCH, PCB, 3D); served
-  locally with `proj up comms`, address from `proj url comms`
+- `index.html` — status page with the board viewer (SCH, PCB, 3D); published
+  from `main` at <https://sequoia-hope.github.io/robot-link/> by GitHub Pages, and
+  served locally with `proj up comms`, address from `proj url comms`
 - `hardware/comms/` — the KiCad project
 - `tools/` — everything is generated; see below
 

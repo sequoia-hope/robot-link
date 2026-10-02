@@ -51,12 +51,12 @@
     "desc": "USB-C, USB path switches, 3.3 V and 1.8 V regulators \u00b7 20 symbols",
     "file": "comms-03_usb_power.svg",
     "source": "03_usb_power.kicad_sch",
-    "paper": "A2",
+    "paper": "A3",
     "page": "4",
     "symbols": 20,
     "size_mm": [
-     594.0044,
-     419.989
+     419.989,
+     297.0022
     ]
    }
   ]
@@ -241,7 +241,7 @@
   "triangles": 294013,
   "primitives": 185
  },
- "when": "2026-10-02 01:20",
+ "when": "2026-10-02 01:26",
  "source": {
   "kind": "file",
   "pcb": "hardware/comms/comms.kicad_pcb",
