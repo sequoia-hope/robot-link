@@ -1,0 +1,45 @@
+# LCSC part numbers the project has chosen, keyed by value and footprint as
+# the board file writes them; pcbview joins this into the viewer's part pane.
+# The C-number is the same at LCSC and JLCPCB.
+#
+# Every part the assembler places has a row. Rows marked "as servodrive" are
+# that project's choices for the same value and footprint; the rest were
+# looked up in JLCPCB's parts library on 2026-10-02 (model, package, stock).
+# The mounting holes have no part.
+value,footprint,lcsc,mpn,note
+RP2350A,RP2350-QFN-60-1EP_7x7_P0.4mm_EP3.4x3.4mm_ThermalVias,C42411118,RP2350A,as servodrive
+3u3,L_pol_2016,C42411119,AOTA-B201610S3R3-101-T,as servodrive
+4u7,C_0402_1005Metric_small_pads,C23733,CL05A475MP5NRNC,as servodrive
+4u7,C_0402_1005Metric,C23733,CL05A475MP5NRNC,as servodrive
+33R,R_0402_1005Metric,C25105,0402WGF330JTCE,as servodrive
+100n,C_0402_1005Metric,C1525,CL05B104KO5NNNC,as servodrive
+27R,R_0402_1005Metric,C25100,0402WGF270JTCE,as servodrive
+12MHz,Crystal_SMD_2520-4Pin_2.5x2.0mm,C284156,TXM12M0004252LBCEO00T,as servodrive
+1k,R_0402_1005Metric,C11702,0402WGF1001TCE,as servodrive
+27p,C_0402_1005Metric,C1557,0402CG270J500NT,as servodrive
+W25Q16JVUXIQ,Winbond_USON-8-1EP_3x2mm_P0.5mm_EP0.2x1.6mm,C2843335,W25Q16JVUXIQ,as servodrive
+BOOTSEL,SW_SPST_B3U-1000P,C231329,B3U-1000P,as servodrive
+RUN,SW_SPST_B3U-1000P,C231329,B3U-1000P,
+SWD,JST_SH_SM03B-SRSS-TB_1x03-1MP_P1.00mm_Horizontal,C2845362,HC-1.0-3PWT,"SH-compatible 3-way, in stock by the reel; JST's own SM03B-SRSS-TB is C160403, 22 in stock that day"
+blue,LED_0603_1608Metric,C2288,KT-0603B,"Vf 3.1 V at 5 mA: on 3V3 through 1k it runs well under 1 mA, dim on purpose"
+LEFT,PinHeader_1x16_P2.54mm_Vertical,C22465876,PZ254V-11-16P,"through-hole; fit by hand, or leave off the assembly order"
+RIGHT,PinHeader_1x16_P2.54mm_Vertical,C22465876,PZ254V-11-16P,"through-hole; fit by hand, or leave off the assembly order"
+ST60A3H1,ST_VFBGA-23_AiP_2.95x4.07mm_P0.4mm,C49438993,ST60A3H1C1CCEPY3,"36 in stock that day; 0.4 mm VFBGA, antenna in package"
+0R,R_0402_1005Metric,C17168,0402WGF0000TCE,basic
+1u,C_0402_1005Metric,C52923,CL05A105KA5NQNC,as servodrive
+1k5,R_0402_1005Metric,C25867,0402WGF1501TCE,basic
+1k8,R_0402_1005Metric,C25871,0402WGF1801TCE,
+TXS0108E,TSSOP-20_4.4x6.5mm_P0.65mm,C17206,TXS0108EPWR,
+4k7,R_0402_1005Metric,C25900,0402WGF4701TCE,as servodrive
+PTN3222GM,NXP_XQFN-12_1.75x2.2mm_P0.4mm,C5364806,PTN3222GMJ,359 in stock that day
+100p,C_0402_1005Metric,C1546,0402CG101J500NT,"basic, C0G"
+MMBT3904,SOT-23,C20526,MMBT3904,basic
+10k,R_0402_1005Metric,C25744,0402WGF1002TCE,as servodrive
+green,LED_0603_1608Metric,C12624,KT-0603G,"Vf 3.1 V at 5 mA, as the blue one"
+USB-C,USB_C_Receptacle_HRO_TYPE-C-31-M-12,C165948,TYPE-C-31-M-12,as servodrive
+5k1,R_0402_1005Metric,C25905,0402WGF5101TCE,as servodrive
+USBLC6-2SC6,SOT-23-6,C7519,USBLC6-2SC6,as servodrive
+TS3USB221A,Texas_UQFN-10_1.5x2mm_P0.5mm,C128396,TS3USB221ARSER,
+AMS1117-3.3,SOT-223-3_TabPin2,C6186,AMS1117-3.3,basic
+10u,C_0805_2012Metric,C15850,CL21A106KAYNNNE,"basic, 25 V X5R"
+TLV75518P,SOT-23-5,C2877863,TLV75518PDBVR,the P is the output discharge

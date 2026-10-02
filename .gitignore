@@ -18,3 +18,7 @@ hardware/*/production/
 hardware/*/gerber/
 
 __pycache__/
+
+# The IPC-2581 export and the PDF packet: tools/assembly.py remakes them
+hardware/*/assembly/*.xml
+hardware/*/assembly/*.pdf

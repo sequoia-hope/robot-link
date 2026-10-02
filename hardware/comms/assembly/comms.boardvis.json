@@ -1,0 +1,146 @@
+{
+  "components": {
+    "H1_1": {
+      "dnpReason": "A mounting hole: there is no part."
+    },
+    "H2": {
+      "dnpReason": "A mounting hole: there is no part."
+    },
+    "H3": {
+      "dnpReason": "A mounting hole: there is no part."
+    },
+    "H4": {
+      "dnpReason": "A mounting hole: there is no part."
+    }
+  },
+  "design": "comms.xml",
+  "locales": [
+    "en"
+  ],
+  "notes": {
+    "provenance": "An entry whose source says \"package convention\" was NOT read off that part's own data sheet; it is what the package family does, and is to be checked against the reel before it is relied on."
+  },
+  "parts": {
+    "Connector_JST_JST_SH_SM03B-SRSS-TB_1x03-1MP_P1.00mm_Horizontal|SWD": {
+      "datasheetUrl": "https://www.lcsc.com/product-detail/C2845362.html",
+      "evidenceSource": "mechanical",
+      "mpn": "HC-1.0-3PWT (LCSC C2845362)",
+      "pin1Evidence": "Set by the housing: the opening faces off the board's right edge, and the two side tabs are soldered."
+    },
+    "Connector_PinHeader_2.54mm_PinHeader_1x16_P2.54mm_Vertical|LEFT": {
+      "datasheetUrl": "https://www.lcsc.com/product-detail/C22465876.html",
+      "evidenceSource": "mechanical",
+      "mpn": "PZ254V-11-16P (LCSC C22465876)",
+      "pin1Evidence": "A plain pin strip, the same either way round. Pin 1 is the square pad, nearest the antenna end of the board."
+    },
+    "Connector_PinHeader_2.54mm_PinHeader_1x16_P2.54mm_Vertical|RIGHT": {
+      "datasheetUrl": "https://www.lcsc.com/product-detail/C22465876.html",
+      "evidenceSource": "mechanical",
+      "mpn": "PZ254V-11-16P (LCSC C22465876)",
+      "pin1Evidence": "A plain pin strip, the same either way round. Pin 1 is the square pad, nearest the antenna end of the board."
+    },
+    "Connector_USB_USB_C_Receptacle_HRO_TYPE-C-31-M-12|USB-C": {
+      "datasheetUrl": "https://www.lcsc.com/product-detail/C165948.html",
+      "evidenceSource": "mechanical",
+      "mpn": "TYPE-C-31-M-12 (LCSC C165948)",
+      "pin1Evidence": "Set by the shell and its four posts: the opening faces the board's bottom edge. It cannot be fitted turned round."
+    },
+    "Crystal_Crystal_SMD_2520-4Pin_2.5x2.0mm|12MHz": {
+      "datasheetUrl": "https://datasheets.raspberrypi.com/rp2350/hardware-design-with-rp2350.pdf",
+      "evidenceSource": "2520 four-pad crystal, package convention, not read off this part's own data sheet",
+      "mpn": "TXM12M0004252LBCEO00T (LCSC C284156)",
+      "pin1Evidence": "Pads 1 and 3 are the crystal, diagonally opposite; 2 and 4 are the can. Turned 180 degrees it is the same circuit, so either way round works.",
+      "tapeOrientation": "Does not matter: see above."
+    },
+    "LED_SMD_LED_0603_1608Metric|blue": {
+      "datasheetUrl": "https://www.lcsc.com/product-detail/C2288.html",
+      "evidenceSource": "0603 chip LED, package convention, not read off this part's own data sheet. Makers differ: confirm on the reel.",
+      "mpn": "KT-0603B (LCSC C2288)",
+      "pin1Evidence": "Pin 1 is the cathode. On the part it is the end with the mark seen from above, and the bar of the T or the point of the triangle on the underside. On the board it is the end with the silkscreen bar.",
+      "tapeOrientation": "Not known; check the reel."
+    },
+    "LED_SMD_LED_0603_1608Metric|green": {
+      "datasheetUrl": "https://www.lcsc.com/product-detail/C12624.html",
+      "evidenceSource": "0603 chip LED, package convention, not read off this part's own data sheet. Makers differ: confirm on the reel.",
+      "mpn": "KT-0603G (LCSC C12624)",
+      "pin1Evidence": "Pin 1 is the cathode. On the part it is the end with the green mark seen from above, and the bar of the T or the point of the triangle on the underside. On the board it is the end with the silkscreen bar.",
+      "tapeOrientation": "Not known; check the reel."
+    },
+    "L_pol_2016|3u3": {
+      "datasheetUrl": "https://datasheets.raspberrypi.com/rp2350/hardware-design-with-rp2350.pdf",
+      "evidenceSource": "Raspberry Pi, 'Hardware design with RP2350', the core supply inductor",
+      "mpn": "AOTA-B201610S3R3-101-T (LCSC C42411119)",
+      "noAlternates": true,
+      "pin1Evidence": "Pin 1 is the end with the polarity dot printed on the body. It is a wound inductor with a marked winding direction, and the dot goes to pad 1, the footprint's own dot.",
+      "tapeOrientation": "Abracon reels this part with the winding dots aligned; a substitute may not be. Do not substitute."
+    },
+    "NXP_XQFN-12_1.75x2.2mm_P0.4mm|PTN3222GM": {
+      "datasheetUrl": "https://www.nxp.com/docs/en/data-sheet/PTN3222.pdf",
+      "evidenceSource": "NXP PTN3222 data sheet rev 1.2, XQFN12 outline; the top mark is package convention, not read off this part's own data sheet",
+      "mpn": "PTN3222GMJ (LCSC C5364806)",
+      "pin1Evidence": "Pin 1 is the corner marked on the package top; the twelve lands are four on each long side and two on each short side.",
+      "tapeOrientation": "Not known; check the reel."
+    },
+    "Package_DFN_QFN_Texas_UQFN-10_1.5x2mm_P0.5mm|TS3USB221A": {
+      "datasheetUrl": "https://www.ti.com/lit/ds/symlink/ts3usb221a.pdf",
+      "evidenceSource": "TI TS3USB221A data sheet (SCDS263), RSE package; the top mark is package convention, not read off this part's own data sheet",
+      "mpn": "TS3USB221ARSER (LCSC C128396)",
+      "pin1Evidence": "Pin 1 is the corner marked on the package top. Ten lands: four on each long side, one on each short side.",
+      "tapeOrientation": "Not known; check the reel."
+    },
+    "Package_SON_Winbond_USON-8-1EP_3x2mm_P0.5mm_EP0.2x1.6mm|W25Q16JVUXIQ": {
+      "datasheetUrl": "https://www.winbond.com/resource-files/w25q16jv%20spi%20revh%2004082019%20plus.pdf",
+      "evidenceSource": "Winbond W25Q16JV, USON 2x3 pad configuration; the dot is package convention, not read off this part's own data sheet",
+      "mpn": "W25Q16JVUXIQ (LCSC C2843335)",
+      "pin1Evidence": "Pin 1 (/CS) is the corner with the dot on the package top. The centre pad underneath is soldered.",
+      "tapeOrientation": "Not known; check the reel."
+    },
+    "Package_SO_TSSOP-20_4.4x6.5mm_P0.65mm|TXS0108E": {
+      "datasheetUrl": "https://www.ti.com/lit/ds/symlink/txs0108e.pdf",
+      "evidenceSource": "TI TXS0108E data sheet, PW package; the mark is package convention, not read off this part's own data sheet",
+      "mpn": "TXS0108EPWR (LCSC C17206)",
+      "pin1Evidence": "Pin 1 is at the dot or dimple on the package top, at the end with the moulded notch or bevelled long edge.",
+      "tapeOrientation": "Not known; check the reel."
+    },
+    "Package_TO_SOT_SMD_SOT-223-3_TabPin2|AMS1117-3.3": {
+      "datasheetUrl": "http://www.advanced-monolithic.com/pdf/ds1117.pdf",
+      "evidenceSource": "AMS1117 data sheet, SOT-223",
+      "mpn": "AMS1117-3.3 (LCSC C6186)",
+      "pin1Evidence": "Three leads on one side, the tab on the other: it only fits one way."
+    },
+    "Package_TO_SOT_SMD_SOT-23-5|TLV75518P": {
+      "datasheetUrl": "https://www.ti.com/lit/ds/symlink/tlv755p.pdf",
+      "evidenceSource": "TI TLV755P data sheet, DBV package",
+      "mpn": "TLV75518PDBVR (LCSC C2877863)",
+      "pin1Evidence": "Three leads on one side, two on the other: it only fits one way."
+    },
+    "Package_TO_SOT_SMD_SOT-23-6|USBLC6-2SC6": {
+      "datasheetUrl": "https://www.st.com/resource/en/datasheet/usblc6-2.pdf",
+      "evidenceSource": "ST USBLC6-2 data sheet, SOT23-6L; reading the mark is package convention, not read off this part's own data sheet",
+      "mpn": "USBLC6-2SC6 (LCSC C7519)",
+      "note": "The part is symmetric about its centre for the two I/O pairs (1 and 6, 3 and 4), but turned round it puts VBUS on the ground pin: 2 is GND, 5 is VBUS.",
+      "pin1Evidence": "Three leads a side, so it can be fitted turned 180 degrees. Pin 1 is found from the marking code on the top (UL26), read upright: pin 1 is lower left.",
+      "tapeOrientation": "Not known; check the reel."
+    },
+    "Package_TO_SOT_SMD_SOT-23|MMBT3904": {
+      "datasheetUrl": "https://www.onsemi.com/pdf/datasheet/mmbt3904lt1-d.pdf",
+      "evidenceSource": "SOT-23, package convention, not read off this part's own data sheet",
+      "mpn": "MMBT3904 (LCSC C20526)",
+      "pin1Evidence": "Two leads on one side, one on the other: it only fits one way."
+    },
+    "RP2350-QFN-60-1EP_7x7_P0.4mm_EP3.4x3.4mm_ThermalVias|RP2350A": {
+      "datasheetUrl": "https://datasheets.raspberrypi.com/rp2350/rp2350-datasheet.pdf",
+      "evidenceSource": "RP2350 datasheet, package markings and the QFN-60 pin list",
+      "mpn": "RP2350A (LCSC C42411118)",
+      "pin1Evidence": "A dot on the package top, beside the logo and part number, marks pin 1; pins count anticlockwise seen from above. The centre pad underneath is ground and must be soldered. On this board the part is turned 180 degrees from Raspberry Pi's reference board: pin 1 is at the lower right."
+    },
+    "ST_VFBGA-23_AiP_2.95x4.07mm_P0.4mm|ST60A3H1": {
+      "datasheetUrl": "https://www.st.com/resource/en/datasheet/st60a3h1.pdf",
+      "evidenceSource": "ST DS14598 rev 4, section 7.1 (ball A1 corner, table 38 seen from below) and 7.2 (package marking)",
+      "mpn": "ST60A3H1C1CCEPY3 (LCSC C49438993)",
+      "note": "The antenna is in this package and radiates off the board's top edge. Turned 180 degrees it would still solder down on some balls and would not work.",
+      "pin1Evidence": "The terminal A1 corner is identified on the package top (figure 32: a mark in one corner, beside the 1.95 x 0.9 mm data-matrix code). There is no ball at A1 itself: row A has balls only in columns 3 to 5. Row A is the edge AWAY from the board edge here, row N toward it, so the A1 corner is the inner right corner of the package seen from above (the part is placed turned 180 degrees)."
+    }
+  },
+  "schema": 1
+}

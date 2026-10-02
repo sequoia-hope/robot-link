@@ -643,7 +643,10 @@ class Sheet:
         x, y = part.at.x + ox, part.at.y + oy
         body = [f'\t(symbol\n\t\t(lib_id "{c.lib_id}")\n'
                 f'\t\t(at {x:.4f} {y:.4f} {part.rot})\n\t\t(unit 1)\n'
-                f'\t\t(exclude_from_sim no)\n\t\t(in_bom yes)\n\t\t(on_board yes)\n'
+                f'\t\t(exclude_from_sim no)\n'
+                # a mounting hole is on the board and in no parts list, as its footprint says
+                f'\t\t(in_bom {"no" if c.lib_id.startswith("Mechanical:") else "yes"})\n'
+                f'\t\t(on_board yes)\n'
                 f'\t\t(dnp {"yes" if c.dnp else "no"})\n'
                 f'\t\t(uuid "{SCH._uid(tag, c.ref)}")']
         for nm, val, (fx, fy, fa, just) in zip(("Reference", "Value"), (c.ref, c.value),

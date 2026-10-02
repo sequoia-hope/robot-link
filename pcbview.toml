@@ -39,6 +39,7 @@ desc = "USB-C, USB path switches, 3.3 V and 1.8 V regulators"
 
 [parts]
 role_field = "comms_role"
+lcsc_csv = "hardware/parts/lcsc.csv"
 
 [layers.notes]
 "F.Cu" = "Every part, and the signals. Top edge: the ST60A3H1 on its grounded island, with the copper-free ring round it that ST's own board has."
