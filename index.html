@@ -78,10 +78,10 @@ footer { margin-top: 1.5rem; color: var(--muted); font-size: .8rem; }
 <header>
   <div class="title">
     <h1>comms</h1>
-    <span class="state active"><span class="dot"></span>Rev A in layout</span>
+    <span class="state active"><span class="dot"></span>Rev B in layout</span>
   </div>
   <p class="lede">A dev board for ST's 60 GHz contactless link: an RP2350A beside an
-  ST60A3H1 (antenna in package), 28 × 63 mm, four layers. Two boards face each other a
+  ST60A3H1 (antenna in package), 28 × 63 mm, six layers, with a connector for an OV2640 camera on the back. Two boards face each other a
   few centimetres apart and tunnel UART, GPIO, I²C or USB 2.0 between them.</p>
 </header>
 
@@ -90,12 +90,17 @@ footer { margin-top: 1.5rem; color: var(--muted); font-size: .8rem; }
   <section class="card">
     <h2>Where it stands</h2>
     <!-- status:begin -->
-    <p><b>Rev A</b>, board saved 2026-10-02 02:22: 85 parts, 80 nets; DRC 0 violations, 0 unconnected, 0 differences from the schematic (net names apart); ERC 0; boardvis 0 errors. Not fabricated.</p>
+    <p><b>Rev B</b>, board saved 2026-10-02 04:59: 100 parts, 83 nets; DRC 0 violations, 0 unconnected, 0 differences from the schematic (net names apart); ERC 0; boardvis 0 errors. Not fabricated.</p>
     <!-- status:end -->
     <p>The part asked for was the ST60A2G0. Its ball map and antenna design are only in
-    ST's NDA package, so rev A uses the <b>ST60A3H1</b> instead: same family, public data
+    ST's NDA package, so the board uses the <b>ST60A3H1</b> instead: same family, public data
     sheet, antenna in the package, up to 480 Mbit/s (eUSB2) rather than the A2's
     6.25 Gbit/s SLVS.</p>
+    <p>Rev A was reviewed on 2026-10-02 (schematic against the data sheets, layout against
+    JLCPCB's limits and ST's reference board) and reworked; the README has what was found
+    and what was done. <b>Rev B</b> adds a connector for an OV2640 camera module on the
+    back of the board, with its 2.8 V and 1.3 V supplies: the lens looks away from the
+    board the link faces. Its signals are on the header GPIO.</p>
   </section>
 
   <section class="card board">
@@ -103,7 +108,7 @@ footer { margin-top: 1.5rem; color: var(--muted); font-size: .8rem; }
     <!-- pcbview:begin -->
 <!-- written by pcbview (python3 -m pcbview build pcbview.toml): change the config, not this -->
 <link rel="stylesheet" href="viewer/assets/viewer.css">
-<section class="vw" data-pv-embed aria-label="comms rev A: schematic, PCB and 3D">
+<section class="vw" data-pv-embed aria-label="comms rev B: schematic, PCB and 3D">
   <div class="vw-bar">
     <div class="vw-left"><button data-vw="layers" aria-pressed="true"
       title="show or hide the side panel"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8 14.2 5 8 8.2 1.8 5z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M1.8 8 8 11.2 14.2 8M1.8 11 8 14.2 14.2 11" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg><span>Panel</span></button></div>
@@ -127,7 +132,7 @@ footer { margin-top: 1.5rem; color: var(--muted); font-size: .8rem; }
         </div>
         <div class="cu-row"><a class="a3-btn" id="sch-pdf" download hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8v8.4M4.4 6.8 8 10.4l3.6-3.6M2 12v2.2h12V12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>PDF, every sheet</span></a></div>
         <p class="sub cu-note" id="sch-cap"></p>
-        <p class="cu-hint">Keys: <b>1</b>&ndash;<b>4</b> pick a sheet, <b>+</b> and <b>&minus;</b> zoom, <b>0</b> fit.
+        <p class="cu-hint">Keys: <b>1</b>&ndash;<b>5</b> pick a sheet, <b>+</b> and <b>&minus;</b> zoom, <b>0</b> fit.
         Drag to pan; scroll or double-click to zoom.</p>
       </div>
       <div class="cu-canvas">
@@ -216,10 +221,10 @@ footer { margin-top: 1.5rem; color: var(--muted); font-size: .8rem; }
   
   <div class="vw-panel pv-over" id="overview" role="tabpanel" hidden>
     <div class="pv-card">
-      <h1>comms rev A</h1>
-      <p class="pv-lede">An RP2350A beside an ST60A3H1, ST's 60 GHz contactless transceiver with its antenna in the package, on a 28 x 63 mm four-layer board. Two of these face each other a few centimetres apart and tunnel UART, GPIO, I2C or USB 2.0 between them.</p>
-      <dl class="pv-facts"><dt>Source</dt><dd><code>hardware/comms/comms.kicad_pcb</code><br><code>hardware/comms/comms.kicad_sch</code></dd><dt>Board</dt><dd>28 &times; 63 mm<small>4 copper layers, 1.6 mm thick</small></dd><dt>Parts</dt><dd>85 footprints<small>85 on the front, 0 on the back</small></dd><dt>Copper</dt><dd>80 nets, 858 track segments, 302 vias<small>1,395 mm of routed track</small></dd><dt>Schematic</dt><dd>4 sheets<small>A4, A3, A3, A3</small></dd><dt>3D</dt><dd>74 of 85 parts drawn from a model<small>3 through an older KiCad&rsquo;s library variable (<code>${KICAD6_3DMODEL_DIR}</code> and so on), read as KiCad 9&rsquo;s library</small><small>J1, L1 with a stand-in from the project file</small><small>9 name no model (FID1&ndash;FID3, H1&ndash;H4, U4, U5)</small></dd><dt>Drawn as boxes</dt><dd><span class="warn">U9, U10</span><small><code>${KICAD9_3DMODEL_DIR}/Package_DFN_QFN.3dshapes/Texas_UQFN-10_1.5x2mm_P0.5mm.step</code>: no such file</small><small>a box the size of the courtyard stands in for each; a <code>[models]</code> entry in the project file can name a stand-in model</small></dd></dl>
-      <p class="cu-hint">Built 2026-10-02 02:23 by pcbview from the KiCad files above:
+      <h1>comms rev B</h1>
+      <p class="pv-lede">An RP2350A beside an ST60A3H1, ST's 60 GHz contactless transceiver with its antenna in the package, on a 28 x 63 mm six-layer board, with a connector for an OV2640 camera module on the back. Two of these face each other a few centimetres apart and tunnel UART, GPIO, I2C or USB 2.0 between them.</p>
+      <dl class="pv-facts"><dt>Source</dt><dd><code>hardware/comms/comms.kicad_pcb</code><br><code>hardware/comms/comms.kicad_sch</code></dd><dt>Board</dt><dd>28 &times; 63 mm<small>6 copper layers, 1.6 mm thick</small></dd><dt>Parts</dt><dd>100 footprints<small>85 on the front, 15 on the back</small></dd><dt>Copper</dt><dd>83 nets, 1,071 track segments, 316 vias<small>1,850 mm of routed track</small></dd><dt>Schematic</dt><dd>5 sheets<small>A4, A3, A3, A3, A3</small></dd><dt>3D</dt><dd>89 of 100 parts drawn from a model<small>3 through an older KiCad&rsquo;s library variable (<code>${KICAD6_3DMODEL_DIR}</code> and so on), read as KiCad 9&rsquo;s library</small><small>J1, L1 with a stand-in from the project file</small><small>9 name no model (FID1&ndash;FID3, H1&ndash;H4, U4, U5)</small></dd><dt>Drawn as boxes</dt><dd><span class="warn">U9, U10</span><small><code>${KICAD9_3DMODEL_DIR}/Package_DFN_QFN.3dshapes/Texas_UQFN-10_1.5x2mm_P0.5mm.step</code>: no such file</small><small>a box the size of the courtyard stands in for each; a <code>[models]</code> entry in the project file can name a stand-in model</small></dd></dl>
+      <p class="cu-hint">Built 2026-10-02 05:00 by pcbview from the KiCad files above:
       <code>python3 -m pcbview build pcbview.toml</code>. Nothing here is drawn by hand &mdash; the layer plots, the model and the
       sheets are KiCad&rsquo;s own exports.</p>
     </div>

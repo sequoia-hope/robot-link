@@ -16,13 +16,13 @@ back = { href = "../index.html", label = "comms" }
 
 [[boards]]
 id = "a"
-name = "comms rev A"
+name = "comms rev B"
 pcb = "hardware/comms/comms.kicad_pcb"
 sch = "hardware/comms/comms.kicad_sch"
 embed = "index.html"
 front_note = "the parts, and the antenna's face"
-back_note = "nothing fitted; the header pins' names"
-note = "An RP2350A beside an ST60A3H1, ST's 60 GHz contactless transceiver with its antenna in the package, on a 28 x 63 mm four-layer board. Two of these face each other a few centimetres apart and tunnel UART, GPIO, I2C or USB 2.0 between them."
+back_note = "the camera connector and its two regulators and passives; the header pins' names"
+note = "An RP2350A beside an ST60A3H1, ST's 60 GHz contactless transceiver with its antenna in the package, on a 28 x 63 mm six-layer board, with a connector for an OV2640 camera module on the back. Two of these face each other a few centimetres apart and tunnel UART, GPIO, I2C or USB 2.0 between them."
 
 [boards.sheets.root]
 title = "Top level"
@@ -36,6 +36,9 @@ desc = "ST60A3H1, 1.8 V translator, eUSB2 repeater, link LED"
 [boards.sheets.03_usb_power]
 title = "USB and power"
 desc = "USB-C, USB path switches, 3.3 V and 1.8 V regulators"
+[boards.sheets.04_camera]
+title = "Camera"
+desc = "OV2640 module connector, its 2.8 V and 1.2 V supplies"
 
 [parts]
 role_field = "comms_role"
@@ -44,7 +47,9 @@ lcsc_csv = "hardware/parts/lcsc.csv"
 [layers.notes]
 "F.Cu" = "Every part, and the signals. Top edge: the ST60A3H1 on its grounded island, with the copper-free ring round it that ST's own board has."
 "In1.Cu" = "Solid ground, 0.21 mm under the parts and under the antenna."
-"In2.Cu" = "The supplies: +3V3, with +1V8 over the link section and the ST60's own supply under the island."
+"In2.Cu" = "Routed signals, ground poured round them; nothing under the antenna."
+"In3.Cu" = "Routed signals, ground poured round them; nothing under the antenna."
+"In4.Cu" = "The supplies: +3V3, with +1V8 over the link section and under the antenna island."
 "B.Cu" = "Ground, the USB pair up the left side from the connector's switch to the repeater, the eUSB2 pair under the island, and what the front had no room for."
 "Edge.Cuts" = "28 x 63 mm, four M2.5 holes mirrored about the antenna's axis."
 

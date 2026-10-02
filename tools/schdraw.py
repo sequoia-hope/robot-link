@@ -553,7 +553,7 @@ class Sheet:
         return (f'(kicad_sch\n\t(version 20250114)\n\t(generator "eeschema")\n'
                 f'\t(generator_version "9.0")\n\t(uuid "{file_uuid}")\n'
                 f'\t(paper "{page}")\n'
-                f'\t(title_block (title "{title}") (date "2026-10-02") (rev "A")\n'
+                f'\t(title_block (title "{title}") (date "2026-10-02") (rev "{SCH.REV}")\n'
                 f'\t\t(company "Sequoia Hope Alexander")\n'
                 f'\t\t(comment 1 "Drawn by tools/schlayout.py from the netlist in tools/circuit.py")\n'
                 f'\t\t(comment 2 "CERN-OHL-P"))\n'

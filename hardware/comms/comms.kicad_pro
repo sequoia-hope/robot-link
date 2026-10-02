@@ -174,6 +174,14 @@
         "pattern": "VREG_AVDD"
       },
       {
+        "netclass": "Power",
+        "pattern": "CAM_2V8"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "CAM_1V3"
+      },
+      {
         "netclass": "USB",
         "pattern": "USB_*"
       },
@@ -225,6 +233,10 @@
     [
       "d481352e-8ed5-5537-86a1-5b377647b88b",
       "03_usb_power"
+    ],
+    [
+      "af3a2f27-daf5-51fd-abfc-3f6bba6310ca",
+      "04_camera"
     ]
   ],
   "text_variables": {}

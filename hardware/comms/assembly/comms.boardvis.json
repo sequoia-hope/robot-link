@@ -9,7 +9,7 @@
     "FID3": {
       "dnpReason": "A fiducial mark: there is no part."
     },
-    "H1_1": {
+    "H1": {
       "dnpReason": "A mounting hole: there is no part."
     },
     "H2": {
@@ -30,6 +30,13 @@
     "provenance": "An entry whose source says \"package convention\" was NOT read off that part's own data sheet; it is what the package family does, and is to be checked against the reel before it is relied on."
   },
   "parts": {
+    "Connector_FFC-FPC_Hirose_FH12-24S-0.5SH_1x24-1MP_P0.50mm_Horizontal|OV2640": {
+      "datasheetUrl": "https://www.hirose.com/product/en/products/FH12/FH12-24S-0.5SH(55)/",
+      "evidenceSource": "Hirose FH12 series drawing; mechanical",
+      "mpn": "FH12-24S-0.5SH(55) (LCSC C202112)",
+      "note": "The camera module is not part of the assembly. It goes in afterwards, the tail's contacts toward the board and the lens away from it.",
+      "pin1Evidence": "Set by the housing: on the BACK of the board, contacts toward the antenna end, the hinged lid and the opening toward the USB end. It cannot be fitted turned round (its two side tabs are behind the contacts)."
+    },
     "Connector_JST_JST_SH_SM03B-SRSS-TB_1x03-1MP_P1.00mm_Horizontal|SWD": {
       "datasheetUrl": "https://www.lcsc.com/product-detail/C2845362.html",
       "evidenceSource": "mechanical",
@@ -131,10 +138,24 @@
       "pin1Evidence": "Three leads a side, so it can be fitted turned 180 degrees. Pin 1 is found from the marking code on the top (UL26), read upright: pin 1 is lower left.",
       "tapeOrientation": "Not known; check the reel."
     },
+    "Package_TO_SOT_SMD_SOT-23|ME6216A13M3G": {
+      "datasheetUrl": "https://www.lcsc.com/datasheet/C236662.pdf",
+      "evidenceSource": "SOT-23; Microne ME6216 data sheet for the pin order (1 VSS, 2 VOUT, 3 VIN)",
+      "mpn": "ME6216A13M3G (LCSC C236662)",
+      "note": "On the back.",
+      "pin1Evidence": "Two leads on one side, one on the other: it only fits one way."
+    },
     "Package_TO_SOT_SMD_SOT-23|MMBT3904": {
       "datasheetUrl": "https://www.onsemi.com/pdf/datasheet/mmbt3904lt1-d.pdf",
       "evidenceSource": "SOT-23, package convention, not read off this part's own data sheet",
       "mpn": "MMBT3904 (LCSC C20526)",
+      "pin1Evidence": "Two leads on one side, one on the other: it only fits one way."
+    },
+    "Package_TO_SOT_SMD_SOT-23|XC6206P282MR": {
+      "datasheetUrl": "https://www.torexsemi.com/file/xc6206/XC6206.pdf",
+      "evidenceSource": "SOT-23; Torex XC6206 data sheet for the pin order (1 VSS, 2 VOUT, 3 VIN)",
+      "mpn": "XC6206P282MR (LCSC C347374)",
+      "note": "On the back. A second-source part is listed: check that its pin order is Torex's.",
       "pin1Evidence": "Two leads on one side, one on the other: it only fits one way."
     },
     "RP2350-QFN-60-1EP_7x7_P0.4mm_EP3.4x3.4mm_ThermalVias|RP2350A": {

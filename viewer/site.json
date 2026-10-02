@@ -1,11 +1,11 @@
 {
  "title": "comms",
- "built": "2026-10-02T02:23:48",
+ "built": "2026-10-02T05:00:11",
  "config": "pcbview.toml",
  "boards": [
   {
    "id": "a",
-   "name": "comms rev A",
+   "name": "comms rev B",
    "page": "index.html",
    "embed": "index.html",
    "source": {

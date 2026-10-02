@@ -4,7 +4,7 @@
 	(generator_version "9.0")
 	(uuid "ccb22f83-e538-5f99-9433-203b59817953")
 	(paper "A3")
-	(title_block (title "comms — RP2350A + ST60A3H1 60 GHz contactless link — 03_usb_power") (date "2026-10-02") (rev "A")
+	(title_block (title "comms — RP2350A + ST60A3H1 60 GHz contactless link — 03_usb_power") (date "2026-10-02") (rev "B")
 		(company "Sequoia Hope Alexander")
 		(comment 1 "Drawn by tools/schlayout.py from the netlist in tools/circuit.py")
 		(comment 2 "CERN-OHL-P"))

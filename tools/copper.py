@@ -34,7 +34,7 @@ EDGE = 0.3 + 0.02
 VIA = (0.46, 0.2)
 MOUNT_KEEP = 2.9               # radius kept clear round an M2.5 hole (the screw head)
 
-# Where a net's plane is: a via for that net has to land on it. In2 is +3V3
+# Where a net's plane is: a via for that net has to land on it. In4 is +3V3
 # except over the link section, where it is +1V8: under the antenna island
 # and either side of it, the translator's A side, the regulator's output,
 # the repeater's 1.8 V pins (but not its 3V3 capacitors below it). Its west
@@ -42,11 +42,12 @@ MOUNT_KEEP = 2.9               # radius kept clear round an M2.5 hole (the screw
 # the back, so that pair has +3V3 under it all the way; J2's pin 1 is
 # outside it and gets a track. (ST_VDD, the ST60's own supply after the
 # 0 R link, is tracks on the front and has no plane.)
-PLANE = {"GND": "In1.Cu", "+3V3": "In2.Cu", "+1V8": "In2.Cu"}
+PLANE = {"GND": "In1.Cu", "+3V3": "In4.Cu", "+1V8": "In4.Cu"}
 V18_POLY = [(-8.6, 0.0), (9.2, 0.0), (9.2, 7.5), (7.3, 7.5), (7.3, 12.9), (-5.0, 12.9),
             (-5.0, 9.8), (-8.6, 9.8)]
-CU_LAYERS = ("F.Cu", "In1.Cu", "In2.Cu", "B.Cu")
-LID = {"F.Cu": pcbnew.F_Cu, "In1.Cu": pcbnew.In1_Cu, "In2.Cu": pcbnew.In2_Cu, "B.Cu": pcbnew.B_Cu}
+CU_LAYERS = ("F.Cu", "In1.Cu", "In2.Cu", "In3.Cu", "In4.Cu", "B.Cu")
+LID = {"F.Cu": pcbnew.F_Cu, "In1.Cu": pcbnew.In1_Cu, "In2.Cu": pcbnew.In2_Cu,
+       "In3.Cu": pcbnew.In3_Cu, "In4.Cu": pcbnew.In4_Cu, "B.Cu": pcbnew.B_Cu}
 
 
 def ring_rect():
@@ -144,11 +145,11 @@ class Model:
                 return False
         return True
 
-    def on_plane(self, net):
-        """The front-layer copper of one net that already reaches its plane:
-        every shape joined, through touching shapes, to a via. Returned as
-        one geometry (possibly empty)."""
-        shapes = [(s, k) for s, n, k in self.shapes["F.Cu"] if n == net]
+    def on_plane(self, net, layer="F.Cu"):
+        """The copper of one net on an outer layer that already reaches its
+        plane: every shape joined, through touching shapes, to a via.
+        Returned as one geometry (possibly empty)."""
+        shapes = [(s, k) for s, n, k in self.shapes[layer] if n == net]
         parent = list(range(len(shapes)))
         def find(i):
             while parent[i] != i:
@@ -165,7 +166,8 @@ class Model:
 
     def off_pads(self, g, gap=0.1):
         """No via in or against a pad, whatever its net: solder goes there."""
-        return all(k != "pad" or s.distance(g) >= gap for s, n, k in self._near("F.Cu", g, gap))
+        return all(k != "pad" or s.distance(g) >= gap
+                   for layer in ("F.Cu", "B.Cu") for s, n, k in self._near(layer, g, gap))
 
     def on_board(self, g, margin=EDGE):
         return self.inside.buffer(-margin).contains(g)
@@ -229,6 +231,10 @@ OWN_TAP = {("C14", "+3V3"), ("C15", "+3V3"), ("C16", "+3V3"), ("C18", "+3V3")}
 # many are tried for. The 3.3 V regulator's tab is its heat sink and the
 # whole board's supply.
 MORE_TAPS = {("U2", "2"): 5}
+# Where a part on the back may not send a via through: the two gaps on the
+# front between the RP2350's capacitors, and the ground beyond them, that
+# its side GPIO leave by. (x0, y0, x1, y1)
+FANOUT = [(-9.6, 26.5, -3.6, 33.6), (3.6, 26.4, 9.6, 34.2)]
 DIRS = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
 
 
@@ -247,19 +253,22 @@ def plane_taps(B, ox, oy):
         fx, fy = M.xy(fp.GetPosition())
         for pad in fp.Pads():
             net = pad.GetNetname()
-            if net not in PLANE or pad.GetDrillSize().x > 0 or not pad.IsOnLayer(pcbnew.F_Cu):
+            if net not in PLANE or pad.GetDrillSize().x > 0:
                 continue
             x, y = M.xy(pad.GetPosition())
             pads.append((ref, pad, net, x, y, fx, fy))
     # the hardest first: the smallest pads have the fewest ways out
     pads.sort(key=lambda t: (t[1].GetSize().x * t[1].GetSize().y, t[0], t[1].GetNumber()))
+    def side(pad):
+        return "F.Cu" if pad.IsOnLayer(pcbnew.F_Cu) else "B.Cu"
     def tap(ref, pad, net, x, y, fx, fy):
         nonlocal made
-        g = M._poly(pad, "F.Cu")
-        if net not in joined:
-            joined[net] = M.on_plane(net)
+        ly = side(pad)
+        g = M._poly(pad, ly)
+        if (net, ly) not in joined:
+            joined[net, ly] = M.on_plane(net, ly)
         own = (ref, net) in OWN_TAP
-        if joined[net].intersects(g) and not own:
+        if joined[net, ly].intersects(g) and not own:
             return True                # already joined to a via, perhaps through its neighbours
         bb = g.bounds
         w = max(0.15, min(0.3, bb[2] - bb[0], bb[3] - bb[1]))
@@ -271,7 +280,7 @@ def plane_taps(B, ox, oy):
         for vx, vy in sorted(vias.get(net, []), key=lambda v: math.hypot(v[0] - x, v[1] - y)):
             if math.hypot(vx - x, vy - y) > 1.8:
                 break
-            if M.track_ok(net, "F.Cu", (x, y), (vx, vy), w):
+            if M.track_ok(net, ly, (x, y), (vx, vy), w):
                 best = (vx, vy, False)
                 break
         if best is None:
@@ -285,7 +294,9 @@ def plane_taps(B, ox, oy):
                     vx, vy = round(x + ux * d, 3), round(y + uy * d, 3)
                     if not plane_ok(net, vx, vy):
                         continue
-                    if M.via_ok(net, vx, vy) and M.track_ok(net, "F.Cu", (x, y), (vx, vy), w):
+                    if ly == "B.Cu" and any(in_rect(vx, vy, r, -0.3) for r in FANOUT):
+                        continue
+                    if M.via_ok(net, vx, vy) and M.track_ok(net, ly, (x, y), (vx, vy), w):
                         best = (vx, vy, True)
                         break
                 if best:
@@ -298,24 +309,24 @@ def plane_taps(B, ox, oy):
             # to the capacitors beside them)
             for d, px, py in sorted((math.hypot(px - x, py - y), px, py)
                                     for r2, p2, n2, px, py, _, _ in pads
-                                    if n2 == net and p2 is not pad):
+                                    if n2 == net and p2 is not pad and side(p2) == ly):
                 if d > 2.0:
                     break
-                if d > 0.05 and M.track_ok(net, "F.Cu", (x, y), (px, py), w):
-                    B.track(net, "F.Cu", [(x, y), (px, py)], w)
-                    M._add("F.Cu", LineString([(x, y), (px, py)]).buffer(w / 2), net, "track")
-                    joined.pop(net, None)
+                if d > 0.05 and M.track_ok(net, ly, (x, y), (px, py), w):
+                    B.track(net, ly, [(x, y), (px, py)], w)
+                    M._add(ly, LineString([(x, y), (px, py)]).buffer(w / 2), net, "track")
+                    joined.pop((net, ly), None)
                     return None        # joined to a neighbour: checked at the end
             return False
         vx, vy, new = best
-        B.track(net, "F.Cu", [(x, y), (vx, vy)], w)
-        M._add("F.Cu", LineString([(x, y), (vx, vy)]).buffer(w / 2), net, "track")
+        B.track(net, ly, [(x, y), (vx, vy)], w)
+        M._add(ly, LineString([(x, y), (vx, vy)]).buffer(w / 2), net, "track")
         if new:
             B.via(net, vx, vy)
             M.add_via(net, vx, vy, *VIA)
             vias.setdefault(net, []).append((vx, vy))
             made += 1
-        joined.pop(net, None)
+        joined.pop((net, ly), None)
         return True
 
     # A pad with no room for a via of its own may still be joined through a
@@ -327,13 +338,15 @@ def plane_taps(B, ox, oy):
             failed.append(f"{t[0]}.{t[1].GetNumber()} ({t[2]})")
     # and the check: every one of those pads is now joined to a via
     for ref, pad, net, x, y, fx, fy in pads:
-        if not M.on_plane(net).intersects(M._poly(pad, "F.Cu")):
+        if not M.on_plane(net, side(pad)).intersects(M._poly(pad, side(pad))):
             failed.append(f"{ref}.{pad.GetNumber()} ({net}) not joined")
     if failed:
         print("  ! no tap found for: " + ", ".join(failed))
     # the extra ones: round the pad's edge, as many as fit
     for ref, pad, net, x, y, fx, fy in pads:
         want = MORE_TAPS.get((ref, pad.GetNumber()), 0)
+        if not want:
+            continue
         bb = M._poly(pad, "F.Cu").bounds
         if not want or (bb[2] - bb[0]) * (bb[3] - bb[1]) < 4.0:      # the tab, not the pin
             continue

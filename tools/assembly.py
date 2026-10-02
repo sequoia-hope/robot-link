@@ -144,6 +144,24 @@ ANSWERS = {
                      "nearest the antenna end of the board.",
         evidenceSource="mechanical",
         datasheetUrl="https://www.lcsc.com/product-detail/C22465876.html"),
+    "OV2640": dict(
+        pin1Evidence="Set by the housing: on the BACK of the board, contacts toward the antenna "
+                     "end, the hinged lid and the opening toward the USB end. It cannot be "
+                     "fitted turned round (its two side tabs are behind the contacts).",
+        evidenceSource="Hirose FH12 series drawing; mechanical",
+        datasheetUrl="https://www.hirose.com/product/en/products/FH12/FH12-24S-0.5SH(55)/",
+        note="The camera module is not part of the assembly. It goes in afterwards, the "
+             "tail's contacts toward the board and the lens away from it."),
+    "XC6206P282MR": dict(
+        pin1Evidence="Two leads on one side, one on the other: it only fits one way.",
+        evidenceSource="SOT-23; Torex XC6206 data sheet for the pin order (1 VSS, 2 VOUT, 3 VIN)",
+        datasheetUrl="https://www.torexsemi.com/file/xc6206/XC6206.pdf",
+        note="On the back. A second-source part is listed: check that its pin order is Torex's."),
+    "ME6216A13M3G": dict(
+        pin1Evidence="Two leads on one side, one on the other: it only fits one way.",
+        evidenceSource="SOT-23; Microne ME6216 data sheet for the pin order (1 VSS, 2 VOUT, 3 VIN)",
+        datasheetUrl="https://www.lcsc.com/datasheet/C236662.pdf",
+        note="On the back."),
     "SWD": dict(
         pin1Evidence="Set by the housing: the opening faces off the board's right edge, and the "
                      "two side tabs are soldered.",

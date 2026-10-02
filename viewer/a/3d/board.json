@@ -2,10 +2,10 @@
  "board": "comms.kicad_pcb",
  "generated": "2026-10-02",
  "glb": "board.glb",
- "bytes": 3782892,
- "kicad_bytes": 17652820,
- "parts": 85,
- "modelled": 74,
+ "bytes": 4127884,
+ "kicad_bytes": 19391128,
+ "parts": 100,
+ "modelled": 89,
  "no_model": [
   "FID1",
   "FID2",
@@ -57,6 +57,6 @@
   "legacy": 3,
   "found": 0
  },
- "triangles": 326561,
- "primitives": 199
+ "triangles": 352702,
+ "primitives": 236
 }

@@ -22,7 +22,7 @@ freerouting is given a board with nothing on it but the problem:
     thing to route to; the rest of its copper is keepout like the others.
   - no pours, and no rule areas except the ones that really forbid tracks:
     KiCad's Specctra export writes every rule area as a keepout.
-  - In1 and In2 are `power` layers in the board file, which the export
+  - In1 and In4 are `power` layers in the board file, which the export
     passes on and the router does not route on.
 
 The session comes back into that same scratch board, and the new tracks and
@@ -51,6 +51,7 @@ BOARD = HW / "comms.kicad_pcb"
 WORK = HW / ".route"
 JAR = Path("/home/sequoia/Software/magnet/route/freerouting-2.2.4.jar")
 mm = pcbnew.FromMM
+SIGNAL = [pcbnew.F_Cu, pcbnew.In2_Cu, pcbnew.In3_Cu, pcbnew.B_Cu]     # where the router may lay a track
 
 FR_CONFIG = """{
   "profile": { "id": "00000000-0000-4000-8000-000000000000", "email": "",
@@ -238,27 +239,47 @@ def strip(src, dst, with_escapes=False):
     partial = sorted(n for n in with_copper if n in opens)
 
     # the one via a partial net keeps: nearest to its open pads
-    anchors = {}
+    anchors, reach = {}, {}
     for net in partial:
         pts = opens[net]
         cx, cy = sum(p[0] for p in pts) / len(pts), sum(p[1] for p in pts) / len(pts)
         vias = [t for t in board.GetTracks() if t.Type() == pcbnew.PCB_VIA_T and t.GetNetname() == net]
         if not vias:
-            raise RuntimeError(f"{net} is part routed and has no via to route to")
+            # no via: a through-hole pad its copper starts from does as well
+            # (the camera's signals, laid on the back from the headers' pads)
+            ends = [e for t in board.GetTracks() if t.GetNetname() == net
+                    for e in (t.GetStart(), t.GetEnd())]
+            vias = [pad for fp in board.GetFootprints() for pad in fp.Pads()
+                    if pad.GetNetname() == net and pad.GetDrillSize().x > 0
+                    and any(pad.HitTest(e) for e in ends)]
+        if not vias:
+            # nor that: one of the surface pads its copper joins, the one on
+            # the smallest part (a pull-up's, not the connector's)
+            hit = [(len(list(fp.Pads())), pad) for fp in board.GetFootprints() for pad in fp.Pads()
+                   if pad.GetNetname() == net and any(pad.HitTest(e) for e in ends)]
+            vias = [min(hit, key=lambda h: h[0])[1]] if hit else []
+        if not vias:
+            raise RuntimeError(f"{net} is part routed and has nothing to route to")
         v = min(vias, key=lambda v: math.hypot(pcbnew.ToMM(v.GetPosition().x) - cx,
                                                pcbnew.ToMM(v.GetPosition().y) - cy))
         anchors[net] = (v.GetPosition().x, v.GetPosition().y)     # by place: SWIG wrappers have no identity
+        reach[net] = (v.GetWidth(pcbnew.F_Cu) if v.Type() == pcbnew.PCB_VIA_T
+                      else max(v.GetSize().x, v.GetSize().y)) / 2 + mm(0.2)
     # pads of a partial net that its laid copper already reaches lose the
-    # net too: the router is to reach the via, not them
+    # net too: the router is to reach the via (or the kept pad), not them
     touched = {}
     for net in partial:
-        open_xy = {(round(x, 3), round(y, 3)) for x, y in opens[net]}
+        ends = [e for t in board.GetTracks() if t.GetNetname() == net
+                for e in ((t.GetStart(), t.GetEnd()) if t.Type() != pcbnew.PCB_VIA_T else (t.GetPosition(),))]
         for fp in board.GetFootprints():
             for pad in fp.Pads():
-                if pad.GetNetname() == net:
-                    p = pad.GetPosition()
-                    if (round(pcbnew.ToMM(p.x), 3), round(pcbnew.ToMM(p.y), 3)) not in open_xy:
-                        touched.setdefault(net, []).append(pad)
+                if pad.GetNetname() != net:
+                    continue
+                p = pad.GetPosition()
+                if (p.x, p.y) == anchors[net]:
+                    continue
+                if any(pad.HitTest(e) for e in ends):
+                    touched.setdefault(net, []).append(pad)
 
     stubs = escapes(board, set(opens) - set(partial)) if with_escapes else []
     # (the pads are listed now: pcbnew's footprint list does not survive the
@@ -275,15 +296,22 @@ def strip(src, dst, with_escapes=False):
             if anchors.get(net) == (p.x, p.y):
                 continue
             g = Point(p.x, p.y).buffer(t.GetWidth(pcbnew.F_Cu) / 2, 4)
-            _keepout(board, [pcbnew.F_Cu, pcbnew.B_Cu], _ring(g))
+            _keepout(board, SIGNAL, _ring(g))
         else:
             a, b = t.GetStart(), t.GetEnd()
             # a track that ends on a kept via would bury the via's centre in
             # keepout on its layer, and a wire has to end exactly there: those
             # few go without (they are the via's own net)
-            if anchors.get(net) not in ((a.x, a.y), (b.x, b.y)):
-                g = LineString([(a.x, a.y), (b.x, b.y)]).buffer(t.GetWidth() / 2, 3)
-                _keepout(board, [t.GetLayer()], _ring(g))
+            an = anchors.get(net)
+            line = LineString([(a.x, a.y), (b.x, b.y)])
+            if an is not None and min(abs(a.x - an[0]) + abs(a.y - an[1]),
+                                      abs(b.x - an[0]) + abs(b.y - an[1])) <= 2000:
+                # it ends on what the router is to reach: the keepout stops
+                # short of that, by its own radius and a little
+                line = line.difference(Point(an).buffer(reach[net]))
+            for part in ([line] if line.geom_type == "LineString" else list(getattr(line, "geoms", []))):
+                if part.length > 1000:
+                    _keepout(board, [t.GetLayer()], _ring(part.buffer(t.GetWidth() / 2, 3)))
         board.Remove(t)
     for z in zones:
         if z.GetIsRuleArea():
@@ -300,6 +328,14 @@ def strip(src, dst, with_escapes=False):
         board.Remove(z)
     for pad in unnet:
         pad.SetNetCode(0)
+    # The router does not know the board's edge clearance: a strip along
+    # each edge where it may put neither track nor via.
+    import gen_board as GB
+    import placement as PL
+    w, h, e = PL.W / 2, PL.H, 0.33
+    for x0, y0, x1, y1 in ((-w, 0, w, e), (-w, h - e, w, h), (-w, 0, -w + e, h), (w - e, 0, w, h)):
+        _keepout(board, SIGNAL, [(mm(GB.OX + x), mm(GB.OY + y))
+                                 for x, y in ((x0, y0), (x1, y0), (x1, y1), (x0, y1))])
     for net, pts in stubs:
         for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
             t = pcbnew.PCB_TRACK(board)

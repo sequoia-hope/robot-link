@@ -58,6 +58,20 @@
      419.989,
      297.0022
     ]
+   },
+   {
+    "sheet": "04_camera",
+    "title": "Camera",
+    "desc": "OV2640 module connector, its 2.8 V and 1.2 V supplies \u00b7 15 symbols",
+    "file": "comms-04_camera.svg",
+    "source": "04_camera.kicad_sch",
+    "paper": "A3",
+    "page": "5",
+    "symbols": 15,
+    "size_mm": [
+     419.989,
+     297.0022
+    ]
    }
   ]
  },
@@ -79,13 +93,13 @@
   "thickness": 1.6,
   "plate": "#c8c8c8",
   "body": "body.svg",
-  "vias": 302,
-  "nets": 80,
-  "footprints": 85,
+  "vias": 316,
+  "nets": 83,
+  "footprints": 100,
   "front": 85,
-  "back": 0,
-  "tracks": 858,
-  "length_mm": 1395.4,
+  "back": 15,
+  "tracks": 1071,
+  "length_mm": 1849.9,
   "layers": [
    {
     "name": "F.Cu",
@@ -94,14 +108,14 @@
     "file": "f.svg",
     "color": "#C83434",
     "note": "Every part, and the signals. Top edge: the ST60A3H1 on its grounded island, with the copper-free ring round it that ST's own board has.",
-    "tracks": 616,
-    "length_mm": 808.6,
+    "tracks": 586,
+    "length_mm": 700.2,
     "pads": 366,
     "zones": [
-     "VREG_LX",
-     "GND",
+     "+1V1",
      "+3V3",
-     "+1V1"
+     "GND",
+     "VREG_LX"
     ]
    },
    {
@@ -124,13 +138,41 @@
     "kind": "copper",
     "file": "in2.svg",
     "color": "#CE7D2C",
-    "note": "The supplies: +3V3, with +1V8 over the link section and the ST60's own supply under the island.",
+    "note": "Routed signals, ground poured round them; nothing under the antenna.",
+    "tracks": 115,
+    "length_mm": 286.9,
+    "pads": 51,
+    "zones": [
+     "GND"
+    ]
+   },
+   {
+    "name": "In3.Cu",
+    "slug": "in3",
+    "kind": "copper",
+    "file": "in3.svg",
+    "color": "#4FCBCB",
+    "note": "Routed signals, ground poured round them; nothing under the antenna.",
+    "tracks": 46,
+    "length_mm": 158.0,
+    "pads": 51,
+    "zones": [
+     "GND"
+    ]
+   },
+   {
+    "name": "In4.Cu",
+    "slug": "in4",
+    "kind": "copper",
+    "file": "in4.svg",
+    "color": "#DB628B",
+    "note": "The supplies: +3V3, with +1V8 over the link section and under the antenna island.",
     "tracks": 0,
     "length_mm": 0.0,
     "pads": 51,
     "zones": [
-     "+3V3",
-     "+1V8"
+     "+1V8",
+     "+3V3"
     ]
    },
    {
@@ -140,9 +182,9 @@
     "file": "b.svg",
     "color": "#4D7FC4",
     "note": "Ground, the USB pair up the left side from the connector's switch to the repeater, the eUSB2 pair under the island, and what the front had no room for.",
-    "tracks": 242,
-    "length_mm": 586.9,
-    "pads": 51,
+    "tracks": 324,
+    "length_mm": 704.8,
+    "pads": 107,
     "zones": [
      "GND"
     ]
@@ -178,6 +220,14 @@
     "file": "fab_f.svg",
     "color": "#DDE1E8",
     "note": "Part bodies and reference designators, front: what each piece of copper belongs to."
+   },
+   {
+    "name": "B.Fab",
+    "slug": "fab_b",
+    "kind": "fab",
+    "file": "fab_b.svg",
+    "color": "#96A2CE",
+    "note": "Part bodies and reference designators, back."
    }
   ]
  },
@@ -185,10 +235,10 @@
   "board": "comms.kicad_pcb",
   "generated": "2026-10-02",
   "glb": "board.glb",
-  "bytes": 3782892,
-  "kicad_bytes": 17652820,
-  "parts": 85,
-  "modelled": 74,
+  "bytes": 4127884,
+  "kicad_bytes": 19391128,
+  "parts": 100,
+  "modelled": 89,
   "no_model": [
    "FID1",
    "FID2",
@@ -240,10 +290,10 @@
    "legacy": 3,
    "found": 0
   },
-  "triangles": 326561,
-  "primitives": 199
+  "triangles": 352702,
+  "primitives": 236
  },
- "when": "2026-10-02 02:23",
+ "when": "2026-10-02 05:00",
  "source": {
   "kind": "file",
   "pcb": "hardware/comms/comms.kicad_pcb",

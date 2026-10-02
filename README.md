@@ -3,15 +3,19 @@
 ### ▶ [Project page: schematic, PCB and 3D viewer](https://sequoia-hope.github.io/robot-link/)
 
 A dev board for ST's 60 GHz contactless link: an **RP2350A** beside an
-**ST60A3H1** (antenna in the package), 28 × 63 mm, four layers. Two boards
+**ST60A3H1** (antenna in the package), 28 × 63 mm, six layers. Two boards
 face each other a few centimetres apart and tunnel UART, GPIO, I²C or
-USB 2.0 between them. The same board is either end.
+USB 2.0 between them. The same board is either end. On the back there is a
+connector for an **OV2640** camera module.
 
-**Status: rev A captured, placed, routed and reviewed. 85 parts, 80 nets;
-KiCad's DRC and ERC report nothing, KiCad's own netlist of the drawn
-schematic matches `tools/circuit.py` net for net, every placed part has an
-LCSC number and the assembly check passes. Not fabricated, and no firmware
-yet.** The review (2026-10-02) and what it changed are [below](#review).
+**Status: rev B captured, placed and routed. 100 parts, 83 nets; KiCad's DRC
+and ERC report nothing, KiCad's own netlist of the drawn schematic matches
+`tools/circuit.py` net for net, every placed part has an LCSC number and
+the assembly check passes. Not fabricated, and no firmware yet.**
+
+- **Rev A** (tag `rev-a`): the link board, four layers. Reviewed on
+  2026-10-02; what the review found and changed is [below](#review).
+- **Rev B**: rev A plus the [camera](#the-camera-rev-b), and six layers.
 
 - `index.html` — status page with the board viewer (SCH, PCB, 3D); published
   from `main` at <https://sequoia-hope.github.io/robot-link/> by GitHub Pages, and
@@ -39,6 +43,7 @@ SLVS.
 | USB | PTN3222 eUSB2 repeater and two TS3USB221A switches: connector, RP2350 and the 60 GHz link, any two joined |
 | Power | USB-C 5 V → AMS1117-3.3 → TLV75518P (1.8 V, off until GPIO11 goes high; dropping it is the ST60's power-on reset) |
 | I/O | two 1 × 16 headers 0.9 in apart, SWD on JST-SH, BOOTSEL, RUN, power / link / user LEDs |
+| Camera | on the back: a 24-way flex connector for the common OV2640 module (the ESP32-CAM's), its 2.8 V and 1.3 V regulators, pull-ups. Its signals are header GPIO |
 | Mechanical | four M2.5 holes mirrored about the antenna's axis: a second board turned over on standoffs puts the two antennas on one line. Three fiducials |
 
 GPIO map (`tools/circuit.py` has the reasons): 0–7 right-hand header · 8/9 USB
@@ -47,20 +52,86 @@ path selects · 10 RF_EN · 11 1.8 V enable · 12/13 tunnelled SDA/SCL (I2C0) ·
 configuration bus (I2C1; ST60A3H1 at 0x60, PTN3222 at 0x43) · 20 translator
 enable · 21–24, 26–29 left-hand header · 25 LED.
 
+## The camera (rev B)
+
+For the bare OV2640 module with a 24-way, 0.5 mm flex tail: the one on the
+ESP32-CAM. The connector (Hirose FH12-24S-0.5SH, bottom contact) is on the
+**back** of the board. The tail goes in from the USB end with its contacts
+toward the board; the module then lies on the back, behind the RP2350, with
+its lens looking away from the board. That is the side away from the board
+the 60 GHz link faces.
+
+| Camera | GPIO | |
+|---|---|---|
+| Y2 – Y9 (data) | 0 – 7 | in order: one PIO `in pins, 8` |
+| VSYNC | 21 | |
+| SIOD / SIOC | 22 / 23 | I2C1, on its second pair of pins (the link's configuration bus is I2C1 on 18/19: move the peripheral, the buses do not share a wire). 4k7 pull-ups |
+| PWDN | 24 | 10 k pull-up: the camera sleeps until this is driven low |
+| HREF | 26 | |
+| XCLK | 27 | from PWM slice 5 B, or PIO: 6 – 24 MHz, so 150 MHz ÷ 8, 10 or 12 (÷ 6 is 25 MHz, too fast). Low drive strength, slow slew: it runs beside PCLK |
+| PCLK | 28 | |
+| RESET | none | 10 k and 1 µF; the sensor has a software reset (COM7 bit 7), to be used once XCLK is running |
+
+These are header pins, and with no camera plugged in they are nothing else:
+26–28 are the ADC pins and have no resistor on them. 22, 23 and 24 keep
+their pull-ups.
+
+The sensor's core is on 1.3 V (OmniVision's data sheet from v1.8 on: 1.24 to
+1.36 V. The older sheets, and the ESP32-CAM, say 1.2 V), its analogue side
+on 2.8 V, its I/O on 3.3 V. The regulators have no enable: a fitted camera
+in power-down draws 1 – 2 mA. To wake it: start XCLK, wait 10 ms, drive
+PWDN low, reset it over SCCB, then configure.
+
+The order of signals on GPIO 21–28 is not free. The camera's wiring is laid
+by hand on the back, from the headers' own through-hole pads to the
+connector, in one layer with nothing crossing, and only this order allows
+that (`gen_board.camera_copper`).
+
+**Checked, not tested:** which end of the connector is pin 1. The module
+makers number the tail one way and the ESP32-CAM's schematic the other. The
+board's pads were checked signal by signal, twice and independently, against
+two module makers' mechanical drawings and Hirose's data sheet (contacts on
+the face away from the lens; with the tail toward you and the contacts up,
+NC and AGND on the right, Y0 and Y1 on the left). Check the module in hand
+against that before plugging it in: a variant with a mirrored tail would be
+the one way this is wrong.
+
+An independent review of the camera addition (2026-10-02) confirmed the pin
+order and found four things, all changed: the core supply (was 1.2 V), 100 nF
+on each rail at the connector and wider supply tracks, more room round XCLK
+where the wiring allows it, and the module's outline on the silkscreen, which
+was 2.7 mm out. Left as they are: XCLK still runs 0.125 mm from PCLK and HREF
+under the connector (the pads' order puts it between them); DOVDD is 3.3 V,
+the data sheet's maximum, as on the ESP32-CAM.
+
+With the headers soldered pins-down straight into a carrier board there is
+about 2.5 mm under the board, and the module is 5.5 mm tall: it needs
+sockets, or the headers the other way up.
+
 ## Board rules
 
-Four layers, JLCPCB's JLC04161H-7628 stack: F.Cu parts and signals, In1 solid
-ground, In2 supplies (+3V3, with +1V8 over the link section), B.Cu signals
-and ground. Routed signals are 0.125 mm track and clearance (JLCPCB's
-four-layer floor is 0.09), and so are the ST60's ball escapes. The USB pairs
-on the back are 0.28 mm wide and 0.16 mm apart. Vias 0.46 / 0.2 mm. All
-parts on the front.
+Six layers, JLCPCB's JLC06161H-7628 stack: F.Cu parts and signals, In1 solid
+ground, In2 and In3 routed signals, In4 supplies (+3V3, with +1V8 over the
+link section), B.Cu signals, the camera's wiring and its parts. The outer
+prepreg is the same 0.21 mm as JLCPCB's four-layer stack, so the antenna's
+ground and the USB pairs sit as they did on rev A. Routed signals are
+0.125 mm track and clearance (JLCPCB's floor is 0.09), and so are the ST60's
+ball escapes. The USB pairs on the back are 0.28 mm wide and 0.16 mm apart.
+Vias 0.46 / 0.2 mm, all through.
+
+Why six: rev A routed on four. With the camera's wiring and parts on the
+back, the same board on four layers left two to seven nets open in each of
+three attempts, the nets at the RP2350's pins that had been marginal on
+rev A. On six it closes in one or two.
 
 ## Ordering and using it
 
 - **JLCPCB Standard PCBA, not Economic**: the ST60A3H1 is a 0.4 mm BGA, and
   Economic stops at 0.5 mm. Standard wants edge rails (JLCPCB adds them) and
   fiducials (three are on the board). Ask for a 0.10 mm stencil.
+- Fifteen parts are on the back (the camera's): assembly is two-sided. To
+  build the board without the camera, leave the back unassembled; nothing
+  on the front depends on it.
 - Green solder mask: the ST60's mask openings are 0.30 mm on 0.25 mm lands,
   which leaves 0.10 mm webs between balls, JLCPCB's minimum for green.
 - Four vias sit in the gap in the ST60's ball field, tented. Plugged vias
@@ -93,8 +164,9 @@ python3 tools/regen.py          # every check, then the viewer and the status li
 `gen_board.py` lays the copper that is decided rather than routed: Raspberry
 Pi's tracks and pours round the RP2350, the ST60's ball field and antenna
 ground (ST's own via pattern, hole for hole where it fits), the 480 Mbit/s
-USB pair, a via beside every pad on a plane net.
-`route.py` hands the remaining ~65 signals to freerouting 2.2.4
+USB pair, a via beside every pad on a plane net,
+the camera's wiring.
+`route.py` hands the remaining ~70 signals to freerouting 2.2.4
 (`~/Software/magnet/route`); it is not deterministic, so it makes several
 attempts and keeps the first that closes everything.
 
@@ -150,9 +222,15 @@ Left as it is, knowingly:
   a summarising tool, not from the raw pages. Check them at order time.
 - Several pin-1 answers in the assembly sidecar are package convention,
   not read off that part's data sheet; the sidecar says which.
+- Rev B's camera connector: see "Checked, not tested" above. The camera's
+  wiring runs 15 to 40 mm on the back over the supply plane; nothing about
+  its signal integrity at a 20 MHz pixel clock has been measured.
+- The 2.8 V regulator is listed as UMW's XC6206; its data sheet numbers the
+  pins oddly, and the reviewer read it as the same physical order as Torex's.
 
 ## Next
 
-Rev A review, then an OV2640 camera interface to the RP2350.
+Firmware: the link's bring-up sequence, a PIO capture for the camera. Then
+a first build.
 
 CERN-OHL-P.

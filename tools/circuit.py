@@ -155,6 +155,9 @@ PWR = {"GND", "VBUS", "+3V3", "+1V8", "+1V1"}
 #   20       the translator's enable
 #   21..24, 26..29 (the ADC pins)   the left-hand header;  25 the LED
 #
+# An OV2640 camera, when one is plugged in, takes 0..7, 21..24 and 26..28
+# off the headers (see CAM, below).
+#
 # Every tunnelling mode the ST60 offers lands on a hardware peripheral, and
 # the configuration bus has one to itself:
 #
@@ -187,7 +190,9 @@ SHEETS = [
     ("01_mcu", "RP2350A, core regulator, crystal, QSPI flash, SWD, buttons, headers"),
     ("02_link", "ST60A3H1, 1.8 V translator, eUSB2 repeater, link LED"),
     ("03_usb_power", "USB-C, USB path switches, 3.3 V and 1.8 V regulators"),
+    ("04_camera", "OV2640 camera module connector, its 2.8 V and 1.3 V supplies"),
 ]
+REV = "B"
 
 
 def mcu():
@@ -485,6 +490,84 @@ def usb_power():
     return out
 
 
+# The OV2640's signals, on the header GPIO: when no camera is plugged in they
+# are the header's pins and nothing else.
+#
+#   0..7    Y2..Y9, the eight data bits, in order (one PIO `in pins, 8`)
+#   21      VSYNC
+#   22/23   SIOD/SIOC   I2C1 SDA/SCL. I2C1 is the configuration bus's too, on
+#                   18/19: one peripheral, moved between two pairs of pins,
+#                   and the two buses never share a wire
+#   24      PWDN    pulled up: the camera sleeps until the RP2350 wakes it
+#   26      HREF
+#   27      XCLK    the camera's clock, from PWM slice 5 (channel B) or PIO
+#   28      PCLK
+#                   26..28 are the ADC pins: no resistor is put on them, so
+#                   they are still ADC inputs when no camera is fitted. 29
+#                   is left alone.
+#
+# Which signal has which of 21..28 is decided by the copper: taken in the
+# order the header's pins stand, the tracks reach the connector's pads side
+# by side on one layer with none crossing (gen_board.camera_copper).
+#
+# RESET has no pin: 10 k and 1 u hold it low through power-up, and the
+# sensor has a software reset (COM7 bit 7).
+CAM = {"Y2": "GP0", "Y3": "GP1", "Y4": "GP2", "Y5": "GP3", "Y6": "GP4", "Y7": "GP5",
+       "Y8": "GP6", "Y9": "GP7", "VSYNC": "GP21", "SIOD": "GP22", "SIOC": "GP23",
+       "PWDN": "GP24", "HREF": "GP26", "XCLK": "GP27", "PCLK": "GP28",
+       "RESET": "CAM_RST", "DOVDD": "+3V3", "DVDD": "CAM_1V3", "AVDD": "CAM_2V8",
+       "DGND": "GND", "AGND": "GND", "NC": "", "Y0": "", "Y1": ""}
+# The module's 24-way tail (0.5 mm pitch), numbered the way the connector
+# numbers it -- which is the way the ESP32-CAM's schematic does. The module
+# makers number the other way round: their pin 1 is this list's 24. (Checked
+# against a module drawing: contacts on the face away from the lens, and
+# with the tail toward you and the contacts up, the maker's 24 on the left.)
+CAM_PINS = ["Y0", "Y1", "Y4", "Y3", "Y5", "Y2", "Y6", "PCLK", "Y7", "DGND", "Y8", "XCLK",
+            "Y9", "DOVDD", "DVDD", "HREF", "PWDN", "VSYNC", "RESET", "SIOC", "AVDD", "SIOD",
+            "AGND", "NC"]
+
+
+def camera():
+    """04_camera: a connector for the common OV2640 module (24-way flex, DVP,
+    the ESP32-CAM's), and the two supplies the sensor wants besides 3.3 V.
+    All of it is on the back of the board: the lens then looks away from
+    the board the 60 GHz link faces."""
+    sh, out = "04_camera", []
+    def add(ref, lib_id, value, fp, nets, group, note="", dnp=False):
+        out.append(Comp(ref, lib_id, value, fp, nets, sh, group, dnp, note))
+
+    j = {str(i + 1): CAM[name] for i, name in enumerate(CAM_PINS)}
+    j["MP"] = "GND"
+    add("J5", "Connector_Generic_MountingPin:Conn_01x24_MountingPin", "OV2640",
+        "Connector_FFC-FPC:Hirose_FH12-24S-0.5SH_1x24-1MP_P0.50mm_Horizontal", j, "camera",
+        "24-way 0.5 mm flex, bottom contact; on the back, the flex leaving toward the USB end")
+    # Core 1.3 V: OmniVision's data sheet from v1.8 on (1.24 to 1.36 V; the
+    # older sheets said 1.2 V, which is what the ESP32-CAM gives it and is
+    # now 40 mV under the minimum). Analogue 2.8 V. I/O is 3.3 V, as the
+    # RP2350's. The 1.3 V part is Microne's ME6216, pin for pin an XC6206.
+    add("U11", "Regulator_Linear:XC6206PxxxMR", "XC6206P282MR", "Package_TO_SOT_SMD:SOT-23",
+        {"1": "GND", "2": "CAM_2V8", "3": "+3V3"}, "supplies", "2.8 V for the sensor's analogue side")
+    add("U12", "Regulator_Linear:XC6206PxxxMR", "ME6216A13M3G", "Package_TO_SOT_SMD:SOT-23",
+        {"1": "GND", "2": "CAM_1V3", "3": "+3V3"}, "supplies", "1.3 V for the sensor's core")
+    add("C40", C, "1u", FP_C["0402"], {"1": "+3V3", "2": "GND"}, "supplies", "2.8 V regulator input")
+    add("C41", C, "1u", FP_C["0402"], {"1": "CAM_2V8", "2": "GND"}, "supplies", "2.8 V regulator output")
+    add("C44", C, "1u", FP_C["0402"], {"1": "+3V3", "2": "GND"}, "supplies", "1.3 V regulator input")
+    add("C42", C, "1u", FP_C["0402"], {"1": "CAM_1V3", "2": "GND"}, "supplies", "1.3 V regulator output")
+    # ... and 100 n on each rail where it meets the connector: the regulators
+    # are 20 mm away, down the board
+    add("C45", C, "100n", FP_C["0402"], {"1": "CAM_2V8", "2": "GND"}, "camera", "AVDD, at the connector")
+    add("C46", C, "100n", FP_C["0402"], {"1": "CAM_1V3", "2": "GND"}, "camera", "DVDD, at the connector")
+    add("C47", C, "100n", FP_C["0402"], {"1": "+3V3", "2": "GND"}, "camera", "DOVDD, at the connector")
+    add("R40", R, "4k7", FP_R["0402"], {"1": "GP22", "2": "+3V3"}, "camera", "SIOD pull-up")
+    add("R41", R, "4k7", FP_R["0402"], {"1": "GP23", "2": "+3V3"}, "camera", "SIOC pull-up")
+    add("R42", R, "10k", FP_R["0402"], {"1": "CAM_RST", "2": "+3V3"}, "camera", "RESET pull-up")
+    add("C43", C, "1u", FP_C["0402"], {"1": "CAM_RST", "2": "GND"}, "camera",
+        "RESET held low through power-up: 10 ms, where OmniVision asks for 3")
+    add("R43", R, "10k", FP_R["0402"], {"1": "GP24", "2": "+3V3"}, "camera",
+        "PWDN pull-up: the camera sleeps until GPIO24 goes low")
+    return out
+
+
 def mechanical():
     out = []
     for i in range(1, 5):
@@ -499,7 +582,7 @@ def mechanical():
 
 
 def board():
-    return mcu() + link() + usb_power() + mechanical()
+    return mcu() + link() + usb_power() + camera() + mechanical()
 
 
 # --------------------------------------------------------------- checking ---

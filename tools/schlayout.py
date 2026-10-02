@@ -346,7 +346,58 @@ def usb_power(s):
         "a power-on reset for the ST60A3H1."), 8, 93, size=1.27)
 
 
-SHEETS = {"01_mcu": mcu, "02_link": link, "03_usb_power": usb_power}
+# ----------------------------------------------------------------- camera ---
+def camera(s):
+    s.block("OV2640 module, 24-way flex (on the back)", 8, 14, 62, 62)
+    j = s.place("J5", 42, 34, fields=(-1, -13.5, "left"))
+    for p in j.pins.values():
+        if p.num == "MP":
+            s.power(p, "GND", stub=1)
+        elif p.net in ("GND", "+3V3"):
+            s.wire(p, p.go(-14 if p.net == "GND" else -17, 0))
+            s.power(p.go(-14 if p.net == "GND" else -17, 0), p.net, d=(-1, 0))
+        elif p.net:
+            s.label(p, stub=1 if int(p.num) % 2 else 7)
+    # what each way is, beside its number; the labels on the other side
+    # are staggered so that neighbours do not sit on each other
+    s.text("\\n".join(CIR.CAM_PINS), 45.2, 22.45, size=1.568)
+
+    s.block("Pull-ups, reset, decoupling at the connector", 8, 66, 62, 90)
+    for ref, x in (("C45", 54), ("C46", 58)):
+        s.place(ref, x, 74, fields="right")
+    s.place("C47", 54, 84, fields="right")
+    for ref, x in (("R40", 16), ("R41", 24), ("R43", 32)):
+        s.place(ref, x, 76, rot=180, fields="right")
+    r = s.place("R42", 46, 74.5, rot=180, fields="right")
+    c = s.place("C43", 46, 79.5, fields="right")
+    s.wire(r["1"], c["1"])
+    s.label(s.g(46, 77), "CAM_RST", stub=1, d=(-1, 0))
+
+    for ref, cin, cout, y, title in (("U11", "C40", "C41", 28, "2.8 V, the sensor's analogue supply"),
+                                     ("U12", "C44", "C42", 58, "1.3 V, the sensor's core")):
+        s.block(title, 70, y - 12, 142, y + 12)
+        u = s.place(ref, 104, y, fields="above")
+        s.wire(u["3"], (88, y))
+        s.power(s.g(88, y), "+3V3")
+        s.place(cin, 93, y + 1.5, fields="left")
+        s.wire(u["2"], (120, y))
+        s.place(cout, 114, y + 1.5, fields="right")
+        s.label(s.g(120, y), u["2"].net, stub=0, d=(1, 0))
+        s.power(u["1"], "GND", stub=1)
+
+    s.text(notes(
+        "For the common OV2640 module (24-way 0.5 mm flex, DVP; the one on the ESP32-CAM). "
+        "The connector is numbered as that board's schematic numbers it; module makers "
+        "number the tail the other way round (their pin 1 is NC, here 24).",
+        "The connector is on the back and bottom-contact: the tail goes in with its contacts "
+        "toward the board, and the lens then looks away from it.",
+        "Every camera signal is on a header GPIO: 0-7 data, 21 VSYNC, 22/23 SCCB (I2C1), "
+        "24 PWDN (pulled up: asleep until driven low), 26 HREF, 27 XCLK (PWM 5B or PIO), "
+        "28 PCLK. RESET has no pin: 10k / 1u, and the sensor's software reset."),
+        70, 76, size=1.27)
+
+
+SHEETS = {"01_mcu": mcu, "02_link": link, "03_usb_power": usb_power, "04_camera": camera}
 FLAGS = {}
 
 
@@ -361,7 +412,7 @@ def root_sheet(project, title):
     uid = CIR._uid
     o = ['(kicad_sch', '\t(version 20250114)', '\t(generator "eeschema")',
          '\t(generator_version "9.0")', f'\t(uuid "{uid(project, "sch")}")', '\t(paper "A4")',
-         f'\t(title_block (title "{title}") (date "2026-10-02") (rev "A")\n'
+         f'\t(title_block (title "{title}") (date "2026-10-02") (rev "{CIR.REV}")\n'
          f'\t\t(company "Sequoia Hope Alexander")\n'
          f'\t\t(comment 1 "Drawn by tools/schlayout.py from the netlist in tools/circuit.py")\n'
          f'\t\t(comment 2 "CERN-OHL-P"))',
@@ -384,7 +435,7 @@ def root_sheet(project, title):
                  f'\t\t(effects (font (size 1.0 1.0)) (justify left top)) '
                  f'(uuid "{uid(project, "sheetdesc", nm)}"))')
         y += 28.0
-    note = ("comms rev A: an RP2350A and an ST60A3H1 60 GHz contactless transceiver.\\n"
+    note = (f"comms rev {CIR.REV}: an RP2350A and an ST60A3H1 60 GHz contactless transceiver.\\n"
             "Two boards face each other and tunnel UART, GPIO, I2C or USB 2.0 between them.")
     o.append(f'\t(text "{note}" (exclude_from_sim no) (at 25 22 0)\n'
              f'\t\t(effects (font (size 1.6 1.6) (bold yes)) (justify left top)) '

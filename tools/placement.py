@@ -111,7 +111,7 @@ PLACE = {
     # -- pull-ups and the MODE_INT strap. GPIO[2]/[3]'s and the strap right
     #    of the island, clear of H2's screw head; the configuration bus's on
     #    the left, above the repeater that shares the bus
-    "R26": (8.3, 0.95, 0),
+    "R26": (8.3, 0.95, 180),       # its signal pad outboard, where there is room for the via to it
     "R27": (7.25, 2.4, 270),       # its +1V8 pad beside the 0 R link's
     "R31": (7.25, 4.4, 90),
     "R24": (-6.8, 6.0, 90),
@@ -188,6 +188,33 @@ PLACE = {
     "H3": (-11.0, 59.6, 0),
     "H4": (11.0, 59.6, 0),
 
+    # -- the camera, all of it on the back (BACK, below). The connector is
+    #    across the board behind the translator and the crystal, its opening
+    #    toward the USB end: the module's tail goes in from there, contacts
+    #    to the board, and the module lies on the back of the RP2350 with
+    #    its lens looking away from the board. The back is clear of parts
+    #    where the module lies (y = 32 to 41.5).
+    #    A part on the back still sends its vias through to the front, and
+    #    the front has two places that cannot take one: the gaps between the
+    #    RP2350's capacitors that its GPIO leave by, each exactly four tracks
+    #    wide. So the pull-ups are above the connector, at the pads they
+    #    belong to, and the regulators below the left-hand gap.
+    "J5": (0.0, 19.85, 180),       # (on the back, KiCad's 180 is "contacts toward the antenna end")
+    "R40": (-5.9, 15.0, 90),       # SIOD
+    "R41": (-4.85, 15.0, 90),      # SIOC
+    "R42": (-3.8, 15.0, 90),       # RESET
+    "C43": (-2.75, 15.0, 90),      # RESET
+    "R43": (-1.7, 15.0, 90),       # PWDN
+    "U11": (-7.35, 36.2, 0),       # 2.8 V
+    "C40": (-7.4, 38.9, 0),
+    "C41": (-6.15, 33.6, 0),
+    "U12": (-7.4, 41.6, 0),        # 1.3 V
+    "C44": (-7.4, 44.3, 0),
+    "C42": (-4.9, 43.0, 90),
+    "C45": (-5.375, 12.4, 90),     # 100 n on each rail where it reaches the connector
+    "C46": (-1.12, 12.3, 90),
+    "C47": (-0.1, 13.4, 90),
+
     # -- fiducials: three, and not symmetric
     "FID1": (-6.6, 2.2, 0),
     "FID2": (-6.6, 60.7, 0),
@@ -195,6 +222,11 @@ PLACE = {
 }
 for _ref, ours, dx, dy, rot in REFERENCE:
     PLACE[ours] = in_chip(dx, dy, rot)
+
+# What is fitted on the back. Positions are the board's own (seen from the
+# front, x to the right), whichever side the part is on.
+BACK = {"J5", "U11", "U12", "C40", "C41", "C42", "C43", "C44", "C45", "C46", "C47",
+        "R40", "R41", "R42", "R43"}
 
 
 def table():

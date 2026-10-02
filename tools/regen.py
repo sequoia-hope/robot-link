@@ -65,9 +65,10 @@ def checks():
 
 
 def page(res):
+    import circuit
     parts, nets = res["_counts"]
     saved = datetime.datetime.fromtimestamp(PCB.stat().st_mtime).strftime("%Y-%m-%d %H:%M")
-    line = (f"<p><b>Rev A</b>, board saved {saved}: {parts} parts, {nets} nets; "
+    line = (f"<p><b>Rev {circuit.REV}</b>, board saved {saved}: {parts} parts, {nets} nets; "
             f"DRC {res['DRC'][0]} violations, {res['unconnected'][0]} unconnected, "
             f"{res['parity'][0]} differences from the schematic (net names apart); ERC {res['ERC'][0]}; "
             f"boardvis {res['assembly'][0]} errors. Not fabricated.</p>")

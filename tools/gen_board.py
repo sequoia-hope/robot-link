@@ -64,13 +64,22 @@ TITLE = "comms — RP2350A + ST60A3H1 60 GHz contactless link"
 REV, DATE = "A", "2026-10-01"
 
 # ------------------------------------------------------------ the stack ----
-# JLCPCB's four-layer JLC04161H-7628: 0.21 mm of 7628 prepreg under each
-# outer layer, a 1.065 mm core. F.Cu and B.Cu carry the signals; In1 is solid
-# ground, directly under the parts and the antenna; In2 is the supplies.
-COPPER = ["F.Cu", "In1.Cu", "In2.Cu", "B.Cu"]
-LAYER_IDS = {"F.Cu": 0, "B.Cu": 2, "In1.Cu": 4, "In2.Cu": 6}
-LAYER_TYPE = {"F.Cu": "signal", "In1.Cu": "power", "In2.Cu": "power", "B.Cu": "signal"}
-PREPREG, CORE, CU_OUT, CU_IN, MASK = 0.2104, 1.065, 0.035, 0.0152, 0.01
+# JLCPCB's six-layer JLC06161H-7628: 0.21 mm of 7628 prepreg under each
+# outer layer (as their four-layer stack has, so the antenna's ground and
+# the USB pairs sit as they did on rev A), two 0.4 mm cores and 0.2 mm of
+# prepreg between them.
+#
+#   F.Cu     parts, signals
+#   In1.Cu   solid ground, directly under the parts and the antenna
+#   In2.Cu   signals   (rev B: the camera took the back layer the router
+#   In3.Cu   signals    had for the RP2350's fan-out; these give it back)
+#   In4.Cu   the supplies, directly over the back layer
+#   B.Cu     signals, the camera's wiring and its parts
+COPPER = ["F.Cu", "In1.Cu", "In2.Cu", "In3.Cu", "In4.Cu", "B.Cu"]
+LAYER_IDS = {"F.Cu": 0, "B.Cu": 2, "In1.Cu": 4, "In2.Cu": 6, "In3.Cu": 8, "In4.Cu": 10}
+LAYER_TYPE = {"F.Cu": "signal", "In1.Cu": "power", "In2.Cu": "signal", "In3.Cu": "signal",
+              "In4.Cu": "power", "B.Cu": "signal"}
+PREPREG, CORE, PREPREG_MID, CU_OUT, CU_IN, MASK = 0.2104, 0.4, 0.2028, 0.035, 0.0152, 0.01
 USER_LAYERS = '''		(9 "F.Adhes" user "F.Adhesive")
 		(11 "B.Adhes" user "B.Adhesive")
 		(13 "F.Paste" user)
@@ -95,7 +104,8 @@ def stackup():
            '\t\t\t(layer "F.SilkS" (type "Top Silk Screen"))',
            '\t\t\t(layer "F.Paste" (type "Top Solder Paste"))',
            f'\t\t\t(layer "F.Mask" (type "Top Solder Mask") (thickness {MASK}))']
-    diel = [("prepreg", PREPREG), ("core", CORE), ("prepreg", PREPREG)]
+    diel = [("prepreg", PREPREG), ("core", CORE), ("prepreg", PREPREG_MID), ("core", CORE),
+            ("prepreg", PREPREG)]
     for i, cu in enumerate(COPPER):
         th = CU_OUT if cu in ("F.Cu", "B.Cu") else CU_IN
         out.append(f'\t\t\t(layer "{cu}" (type "copper") (thickness {th}))')
@@ -136,13 +146,13 @@ def skeleton():
 # Design rules. Routed signals are 0.125 mm (5 mil) track and clearance:
 # round the RP2350 the reference design's capacitors leave each group of
 # four GPIO pins a 1.4 mm gap, which at 0.15/0.15 is four tracks with 0.05 mm
-# to spare and at 0.125/0.125 has room. JLCPCB's four-layer floor is 0.09.
+# to spare and at 0.125/0.125 has room. JLCPCB's multilayer floor is 0.09.
 # Everything this file lays by hand stays at 0.15 or wider. Vias are
 # 0.46/0.2 at the smallest (annular ring 0.13).
 VIA = (0.46, 0.2)              # plane taps, the ST60's ball field, stitching
 VIA_REF = (0.6, 0.25)          # the reference design's own, round the RP2350
 CLASSES = {
-    "Power": ("VBUS", "+3V3", "+1V8", "+1V1", "ST_VDD", "VREG_LX", "VREG_AVDD"),
+    "Power": ("VBUS", "+3V3", "+1V8", "+1V1", "ST_VDD", "VREG_LX", "VREG_AVDD", "CAM_2V8", "CAM_1V3"),
     "USB": ("USB_*", "RPT_*", "EUSB_*"),
 }
 
@@ -242,6 +252,7 @@ FP_TABLE = '''(fp_lib_table
 
 # ------------------------------------------------------------ primitives ---
 LAYER = {"F.Cu": pcbnew.F_Cu, "In1.Cu": pcbnew.In1_Cu, "In2.Cu": pcbnew.In2_Cu,
+         "In3.Cu": pcbnew.In3_Cu, "In4.Cu": pcbnew.In4_Cu,
          "B.Cu": pcbnew.B_Cu, "Edge.Cuts": pcbnew.Edge_Cuts, "F.SilkS": pcbnew.F_SilkS,
          "B.SilkS": pcbnew.B_SilkS, "Dwgs.User": pcbnew.Dwgs_User,
          "Cmts.User": pcbnew.Cmts_User, "F.Fab": pcbnew.F_Fab, "F.Mask": pcbnew.F_Mask}
@@ -271,7 +282,8 @@ class Build:
         fp.SetReference(comp.ref)
         fp.SetValue(comp.value)
         fp.SetPosition(V(x, y))
-        fp.SetOrientationDegrees(rot)
+        back = comp.ref in PL.BACK
+        fp.SetOrientationDegrees(0 if back else rot)
         for pad in fp.Pads():
             n = comp.nets.get(pad.GetNumber())
             if n:
@@ -297,6 +309,10 @@ class Build:
                     and g.GetWidth() < mm(0.15):
                 g.SetWidth(mm(0.15))
         self.b.Add(fp)
+        if back:
+            # (a footprint is turned over once it is on a board, not before)
+            fp.Flip(V(x, y), pcbnew.FLIP_DIRECTION_LEFT_RIGHT)
+            fp.SetOrientationDegrees(rot)
         self.fps[comp.ref] = fp
         return fp
 
@@ -569,6 +585,11 @@ def st60_copper(B):
     B.track("ST_VDD", "F.Cu", [(1.6, y_in), (x_out - 0.25, y_in), (x_out + 0.05, y_out),
                                (c22[0] - 0.42, y_out), (c22[0] - 0.42 + (y_out - c22[1]), c22[1]), c22], 0.2)
     B.track("ST_VDD", "F.Cu", [c22, c21, r20], 0.3)
+    # the two capacitors' ground: one via beside the upper one, laid here so
+    # that it has the place before the pull-up next to it wants one
+    g22, g21 = B.pad("C22", "2"), B.pad("C21", "2")
+    B.track("GND", "F.Cu", [g21, g22, (g22[0] + 0.63, g22[1])], 0.3)
+    B.via("GND", g22[0] + 0.63, g22[1])
 
     # -- eUSB2
     w = 0.15
@@ -627,7 +648,7 @@ def st60_copper(B):
 
 
 # ------------------------------------------------------------- USB pairs ----
-# The USB pairs on the back, over In2 0.21 mm away: 0.28 mm wide, 0.16 mm
+# The USB pairs on the back, over In4 0.21 mm away: 0.28 mm wide, 0.16 mm
 # apart, which a field solver puts at 89 ohm differential (0.2 / 0.16 was
 # 100). On the front, between pads, they are 0.2 mm.
 TW, GAP = 0.28, 0.16
@@ -650,7 +671,7 @@ def usb_copper(B):
     other under the package.
 
     From U9 the pair drops to the back and runs up the left side of the
-    board outside the header, over the +3V3 plane on In2 all the way (the
+    board outside the header, over the +3V3 plane on In4 all the way (the
     +1V8 plane stops short of it), to come up between the repeater's two
     3V3 capacitors.
     """
@@ -798,7 +819,8 @@ def select_copper(B):
     p_m, p_c = P("U1", "12"), P("U1", "13")                 # GPIO8, GPIO9
     r13, s_m = P("R13", "1"), P("U10", "9")
     r12, s_c = P("R12", "1"), P("U9", "9")
-    xm, xc = 8.4, 8.8                                       # the two lanes down the back
+    xm, xc = 7.1, 8.2             # the two lanes down the back, either side of the RP2350's ground vias
+                                  # (the camera's data has the eight lanes outboard of these)
     va_m, va_c = (p_m[0] + 2.8625, p_m[1] - 0.95), (p_c[0] + 2.8625, p_c[1] - 1.3)
     B.track("USB_SEL_MCU", "F.Cu", [p_m, (p_m[0] + 1.4625, p_m[1]), (va_m[0] - 0.45, va_m[1]), va_m], w)
     B.track("USB_SEL_CONN", "F.Cu", [p_c, (p_c[0] + 1.2625, p_c[1]),
@@ -823,6 +845,133 @@ def select_copper(B):
     y = r12[1] + 0.62
     B.track("USB_SEL_CONN", "F.Cu", [r12, (r12[0], y - 0.15), (r12[0] - 0.15, y), (s_c[0] + 0.85, y),
                                      (s_c[0] + 0.425, s_c[1]), s_c], w)
+
+
+# ------------------------------------------------------------- the camera ---
+CAM_W, CAM_PITCH = 0.125, 0.25
+
+def camera_copper(B):
+    """The OV2640's signals, from the headers' pads to the connector's, all
+    on the back and none crossing.
+
+    Each is a header GPIO, so each net already has a through-hole pad on the
+    back at the board's edge; the connector is across the middle. Down each
+    side the tracks gather into a column just inboard of the header -- a pad
+    lower down joins first and so runs nearer the centre -- and the column
+    turns in toward the connector, the track nearest the centre turning
+    first, which keeps the order. The connector's pads can be come at from
+    either end: from above, where the module's tail goes in, or from below,
+    under the connector's body. The right-hand column splits: GPIO0 and 1
+    go in under the body, 2 to 7 go round the end of the pad row and come
+    down onto the pads from above. On the left all five go under the body.
+    That only works for one order of signals on the pins, and the GPIO map
+    in circuit.py is that order.
+
+    Above the row, at its left-hand end, are the pull-ups, each joined to
+    its pad; the two regulated supplies leave between them, each to a via
+    the router takes it on from, and the 3.3 V pin goes to a via into its
+    plane. SIOD and SIOC (GPIO22/23) are left to the router from there.
+    """
+    P = B.pad
+    w, p = CAM_W, CAM_PITCH
+    comp = {c.ref: c for c in CIR.board()}
+    j = {net: num for num, net in comp["J5"].nets.items()}
+    def pad_x(net):
+        return P("J5", j[net])[0]
+    def header(ref):
+        return {int(net[2:]): P(ref, n) for n, net in comp[ref].nets.items() if net.startswith("GP")}
+    y_row = P("J5", "1")[1]
+    top, bot = y_row - 0.45, y_row + 0.45          # where a track meets a pad, 0.2 in from its end
+    mp = max(pcbnew.ToMM(pd.GetPosition().y) - OY for pd in B.fps["J5"].Pads() if pd.GetNumber() == "MP")
+    y_in = mp + 1.1 + 0.25                         # the first track below the mounting pads
+    def run(net, pts):
+        B.track(net, "B.Cu", pts, w)
+
+    # -- right: GPIO0..7 on J3. Columns from x = 8.5 outward, in pin order
+    # (8.2 is the USB select's lane).
+    hdr = header("J3")
+    col = {g: 8.5 + g * p for g in range(8)}
+    def start(g):
+        x, y = hdr[g]
+        return [(x, y), (col[g] + 0.6, y), (col[g], y - 0.6)]
+    # under the body: 1, then 0 below it
+    for k, g in enumerate((1, 0)):
+        px, yh = pad_x(f"GP{g}"), y_in + k * p
+        run(f"GP{g}", start(g) + [(col[g], yh + 0.3), (col[g] - 0.3, yh), (px + 0.3, yh), (px, yh - 0.3), (px, bot)])
+    # round the end of the row: 2 innermost and lowest, 7 outermost
+    for g in range(2, 8):
+        px, yh = pad_x(f"GP{g}"), top - 0.65 - (g - 2) * p
+        run(f"GP{g}", start(g) + [(col[g], yh + 0.3), (col[g] - 0.3, yh), (px + 0.3, yh), (px, yh + 0.3), (px, top)])
+
+    # -- left: GPIO21, 24, 26, 27, 28 on J2. 28 to 24 gather into a column;
+    # 21 is the top pin and crosses first. They run in under the connector
+    # together, rise to five lanes below its mounting pad, and each leaves
+    # for its pad where the ground vias that come through from the crystal
+    # and the 1V1 via from the RP2350 let it: (lane, where it turns up,
+    # the x it climbs at). The pads at -2.75 and 2.25 have a via just under
+    # their ends and are come at on a slant.
+    hdr = header("J2")
+    plan = [(21, y_in,        -3.4,  True),
+            (24, y_in + 0.25, -2.25, False),
+            (26, y_in + 0.85, -1.0,  True),
+            (27, y_in + 1.1,   0.25, False),
+            (28, y_in + 1.35,  None, None)]
+    y0 = hdr[21][1]
+    for k, (g, lane, xu, slant) in enumerate(plan):
+        net = f"GP{g}"
+        px = pad_x(net)
+        x, y = hdr[g]
+        row = y0 + k * (p + 0.0025)                # in under the connector, side by side
+        xs = -6.2 + k * 0.11                       # where it starts to rise (staggered: the slants stay apart)
+        if k == 0:
+            pts = [(x, y)]
+        else:
+            # the column, 28 nearest the centre; XCLK (27) has what room
+            # there is either side of it, being a clock beside the pixel clock
+            xc = {24: -10.38, 26: -10.13, 27: -9.75, 28: -9.3}[g]
+            pts = [(x, y), (xc - 0.6, y), (xc, y - 0.6), (xc, row + 0.3), (xc + 0.3, row)]
+        pts += [(xs, row), (xs + (row - lane), lane)]
+        if xu is None:
+            # PCLK, the last and farthest: on past the digital ground pin's
+            # track, and up between the two ground vias under its own pad
+            pts += [(2.15, lane), (2.45, lane - 0.3), (2.45, 22.3), (2.0, 21.85), (2.0, 20.0),
+                    (px, 20.0 - (px - 2.0)), (px, bot)]
+            run(net, pts)
+            continue
+        pts += [(xu - 0.3, lane), (xu, lane - 0.3)]
+        if slant:
+            d = abs(px - xu)
+            pts += [(xu, bot + 0.3 + d), (px, bot + 0.3)]
+        pts += [(px, bot)]
+        run(net, pts)
+
+    # -- above the row: pad to part, all slanting the same way so none cross
+    def up(net, px, xp, y_end, width=w):
+        d = abs(px - xp)
+        pts = [(px, top), (px, top - 0.55), (xp, top - 0.55 - d), (xp, y_end)]
+        B.track(net, "B.Cu", pts, width)
+        return pts[-1]
+    yl = P("R40", "1")[1]                           # the parts' pads nearer the connector
+    for net, part in (("GP22", "R40"), ("GP23", "R41"), ("CAM_RST", "R42"), ("CAM_RST", "C43"),
+                      ("GP24", "R43")):
+        up(net, pad_x(net), P(part, "1")[0], yl)
+    # the three supplies: each to its 100 n, which is where the router (or
+    # the plane, for 3.3 V) takes it from
+    for net, cap in (("CAM_2V8", "C45"), ("CAM_1V3", "C46")):
+        cx_, cy_ = P(cap, "1")
+        up(net, pad_x(net), cx_, cy_, 0.15)          # (0.5 mm between two pull-ups' pads)
+    px = P("J5", "14")[0]                           # DOVDD: 3.3 V
+    cx_, cy_ = P("C47", "1")
+    B.track("+3V3", "B.Cu", [(px, top), (px, cy_ + (cx_ - px)), (cx_, cy_)], 0.2)
+
+    # The digital ground pin is in the middle of the row with the
+    # translator's pads over it on the front: no room for a via of its own.
+    # It goes down under the connector to one of the crystal's ground vias.
+    gx = P("J5", "10")[0]
+    vias = [(pcbnew.ToMM(v.GetPosition().x) - OX, pcbnew.ToMM(v.GetPosition().y) - OY)
+            for v in B.b.GetTracks() if v.Type() == pcbnew.PCB_VIA_T and v.GetNetname() == "GND"]
+    vx, vy = min(vias, key=lambda q: math.hypot(q[0] - 1.8, q[1] - 23.0))
+    B.track("GND", "B.Cu", [(gx, bot), (gx, vy - (vx - gx)), (vx, vy)], 0.2)
 
 
 def _near(a, b, tol=0.6):
@@ -929,10 +1078,19 @@ def planes(B):
     B.zone("GND", "ground plane In1", ["In1.Cu"], full, clearance=0.2)
     B.zone("GND", "ground pour F.Cu", ["F.Cu"], full, clearance=0.2, islands="drop")
     B.zone("GND", "ground pour B.Cu", ["B.Cu"], full, clearance=0.2, islands="drop")
-    # In2: +3V3 everywhere but over the link section, the antenna island
+    # In2 and In3 are the router's: ground poured round whatever it lays
+    B.zone("GND", "ground pour In2", ["In2.Cu"], full, clearance=0.2, islands="drop")
+    B.zone("GND", "ground pour In3", ["In3.Cu"], full, clearance=0.2, islands="drop")
+    # ... but not under the antenna: ST's board is solid there on every
+    # inner layer, and so is this one (the island, its ring and the fence)
+    cx, cy = PL.ST60
+    hx, hy, m = PL.ISLAND[0] + PL.MOAT + FENCE_SIDE, PL.ISLAND[1] + PL.MOAT, FENCE_REACH
+    B.keepout("antenna: no tracks on the inner layers", ["In2.Cu", "In3.Cu"],
+              rect(cx - hx, 0, cx + hx, cy + hy + m), pour=False, tracks=True)
+    # In4: +3V3 everywhere but over the link section, the antenna island
     # included, where it is +1V8 (copper.V18_POLY)
-    B.zone("+3V3", "+3V3 plane In2", ["In2.Cu"], full, clearance=0.2, islands="drop")
-    B.zone("+1V8", "+1V8 plane In2", ["In2.Cu"], CU.V18_POLY, priority=5, clearance=0.2,
+    B.zone("+3V3", "+3V3 plane In4", ["In4.Cu"], full, clearance=0.2, islands="drop")
+    B.zone("+1V8", "+1V8 plane In4", ["In4.Cu"], CU.V18_POLY, priority=5, clearance=0.2,
            islands="drop")
 
 
@@ -949,9 +1107,9 @@ def silk(B):
         for g in list(B.fps[ref].GraphicalItems()):
             if g.GetLayer() == pcbnew.F_SilkS:
                 B.fps[ref].Remove(g)
-    # header pin names: on the front outboard of each header, turned to fit
-    # between the pads and the board edge; on the back, where nothing else
-    # is, inboard and level
+    # header pin names: outboard of each header, turned to fit between the
+    # pads and the board edge, on both faces (the camera has the back's
+    # inboard side)
     for ref, side in (("J2", 1), ("J3", -1)):
         x0, y0, _ = PL.PLACE[ref]
         for i in range(16):
@@ -960,13 +1118,22 @@ def silk(B):
             front = label[2:] if label.startswith("GP") else SILK_FRONT.get(label, label)
             y = y0 + i * 2.54
             B.text("F.SilkS", front, x0 - side * 1.78, y, 0.8, rot=90, thick=0.15)
-            B.text("B.SilkS", label, x0 + side * 1.5, y, 1.0, thick=0.15,
-                   just="right" if side > 0 else "left", mirror=True)
+            B.text("B.SilkS", front, x0 - side * 1.78, y, 0.8, rot=90, thick=0.15, mirror=True)
         # pin 1: a bar across the end of the row
         B.line("F.SilkS", x0 - 0.9, y0 - 1.2, x0 + 0.9, y0 - 1.2, 0.15)
-    B.text("B.SilkS", "comms rev A  RP2350A + ST60A3H1", 0, 30.0, 1.0, rot=90, mirror=True)
-    B.text("B.SilkS", "60 GHz ANTENNA THIS END", 0, 8.0, 1.0, thick=0.15, mirror=True)
-    B.text("B.SilkS", "KEEP CLEAR", 0, 9.6, 1.0, thick=0.15, mirror=True)
+    B.text("B.SilkS", f"comms rev {CIR.REV}", 0.9, 49.0, 1.0, rot=90, thick=0.15, mirror=True)
+    B.text("B.SilkS", "RP2350A + ST60A3H1", -0.9, 49.0, 1.0, rot=90, thick=0.15, mirror=True)
+    B.text("B.SilkS", "60 GHz ANTENNA THIS END", 0, 7.9, 1.0, thick=0.15, mirror=True)
+    # the camera: which way the flex goes in, and where the module lies
+    jx, jy, _ = PL.PLACE["J5"]
+    B.text("B.SilkS", "OV2640", jx, jy + 6.4, 1.0, thick=0.15, mirror=True)
+    B.text("B.SilkS", "LENS UP", jx, jy + 7.9, 0.8, thick=0.15, mirror=True)
+    for s in (-1, 1):
+        # (the tail goes 3.1 mm into the connector; a 20.5 mm module's body
+        # is then 12.3 to 20.8 mm from the connector's centre)
+        B.line("B.SilkS", jx + s * 4.25, jy + 12.3, jx + s * 4.25, jy + 13.3, 0.15)
+        B.line("B.SilkS", jx + s * 4.25, jy + 20.8, jx + s * 3.25, jy + 20.8, 0.15)
+        B.line("B.SilkS", jx + s * 4.25, jy + 20.8, jx + s * 4.25, jy + 19.8, 0.15)
     # antenna axis: a tick each side of the moat on the front, on the patch's
     # line; on the back a target over the patch itself
     px, py = PL.PATCH
@@ -998,6 +1165,7 @@ def build(path, taps=True):
     st60_copper(B)
     usb_copper(B)
     select_copper(B)
+    camera_copper(B)
     n_ant = antenna_ground(B)
     print(f"       antenna ground, ST's vias: {n_ant['island']} in the island, "
           f"{n_ant['fence']} fencing it, {n_ant['left out']} left out")

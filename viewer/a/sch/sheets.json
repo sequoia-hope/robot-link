@@ -57,6 +57,20 @@
     419.989,
     297.0022
    ]
+  },
+  {
+   "sheet": "04_camera",
+   "title": "Camera",
+   "desc": "OV2640 module connector, its 2.8 V and 1.2 V supplies \u00b7 15 symbols",
+   "file": "comms-04_camera.svg",
+   "source": "04_camera.kicad_sch",
+   "paper": "A3",
+   "page": "5",
+   "symbols": 15,
+   "size_mm": [
+    419.989,
+    297.0022
+   ]
   }
  ]
 }
