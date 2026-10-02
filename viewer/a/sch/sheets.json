@@ -1,0 +1,62 @@
+{
+ "schematic": "comms.kicad_sch",
+ "pdf": "comms.pdf",
+ "sheets": [
+  {
+   "sheet": "root",
+   "title": "Top level",
+   "desc": "the sheets and what is on each \u00b7 0 symbols",
+   "file": "comms.svg",
+   "source": "comms.kicad_sch",
+   "paper": "A4",
+   "page": "1",
+   "symbols": 0,
+   "size_mm": [
+    297.0022,
+    210.0072
+   ]
+  },
+  {
+   "sheet": "01_mcu",
+   "title": "RP2350A",
+   "desc": "RP2350A, core regulator, crystal, QSPI flash, SWD, buttons, headers \u00b7 37 symbols",
+   "file": "comms-01_mcu.svg",
+   "source": "01_mcu.kicad_sch",
+   "paper": "A3",
+   "page": "2",
+   "symbols": 37,
+   "size_mm": [
+    419.989,
+    297.0022
+   ]
+  },
+  {
+   "sheet": "02_link",
+   "title": "60 GHz link",
+   "desc": "ST60A3H1, 1.8 V translator, eUSB2 repeater, link LED \u00b7 21 symbols",
+   "file": "comms-02_link.svg",
+   "source": "02_link.kicad_sch",
+   "paper": "A3",
+   "page": "3",
+   "symbols": 21,
+   "size_mm": [
+    419.989,
+    297.0022
+   ]
+  },
+  {
+   "sheet": "03_usb_power",
+   "title": "USB and power",
+   "desc": "USB-C, USB path switches, 3.3 V and 1.8 V regulators \u00b7 20 symbols",
+   "file": "comms-03_usb_power.svg",
+   "source": "03_usb_power.kicad_sch",
+   "paper": "A2",
+   "page": "4",
+   "symbols": 20,
+   "size_mm": [
+    594.0044,
+    419.989
+   ]
+  }
+ ]
+}

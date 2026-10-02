@@ -1,0 +1,59 @@
+{
+ "board": "comms.kicad_pcb",
+ "generated": "2026-10-02",
+ "glb": "board.glb",
+ "bytes": 3440612,
+ "kicad_bytes": 16059908,
+ "parts": 78,
+ "modelled": 70,
+ "no_model": [
+  "H1",
+  "H2",
+  "H3",
+  "H4",
+  "U4",
+  "U5"
+ ],
+ "missing": [
+  "U9",
+  "U10"
+ ],
+ "empty": [],
+ "substituted": [
+  "J1",
+  "L1"
+ ],
+ "resolved": [
+  "C6",
+  "C7",
+  "U1"
+ ],
+ "flattened": [],
+ "boxed": [
+  "U9",
+  "U10"
+ ],
+ "why": {
+  "U9": "no such file",
+  "U10": "no such file"
+ },
+ "missing_models": [
+  "${KICAD9_3DMODEL_DIR}/Package_DFN_QFN.3dshapes/Texas_UQFN-10_1.5x2mm_P0.5mm.step"
+ ],
+ "boxes": [
+  {
+   "model": "${KICAD9_3DMODEL_DIR}/Package_DFN_QFN.3dshapes/Texas_UQFN-10_1.5x2mm_P0.5mm.step",
+   "why": "no such file",
+   "refs": [
+    "U9",
+    "U10"
+   ]
+  }
+ ],
+ "resolved_how": {
+  "legacy": 3,
+  "found": 0
+ },
+ "triangles": 294013,
+ "primitives": 185
+}

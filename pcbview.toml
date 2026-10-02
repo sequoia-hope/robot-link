@@ -1,0 +1,59 @@
+# pcbview.toml -- the SCH / PCB / 3D viewer for the comms board, built by
+# pcbview (~/Software/pcbview):
+#
+#     python3 tools/regen.py                       # what route.py and gen_board.py run
+#     ~/Software/pcbview/bin/pcbview build pcbview.toml [--only sch,layers,3d]
+#
+# pcbview plots the schematic and every layer with kicad-cli, exports the board
+# as a GLB and reads the part pane's facts out of the board file, all into
+# viewer/, and into index.html between the pcbview markers. viewer/index.html
+# is the viewer filling the window.
+
+title = "comms"
+subtitle = "sequoia-hope"
+out = "viewer"
+back = { href = "../index.html", label = "comms" }
+
+[[boards]]
+id = "a"
+name = "comms rev A"
+pcb = "hardware/comms/comms.kicad_pcb"
+sch = "hardware/comms/comms.kicad_sch"
+embed = "index.html"
+front_note = "the parts, and the antenna's face"
+back_note = "nothing fitted; the header pins' names"
+note = "An RP2350A beside an ST60A3H1, ST's 60 GHz contactless transceiver with its antenna in the package, on a 28 x 63 mm four-layer board. Two of these face each other a few centimetres apart and tunnel UART, GPIO, I2C or USB 2.0 between them."
+
+[boards.sheets.root]
+title = "Top level"
+desc = "the sheets and what is on each"
+[boards.sheets.01_mcu]
+title = "RP2350A"
+desc = "RP2350A, core regulator, crystal, QSPI flash, SWD, buttons, headers"
+[boards.sheets.02_link]
+title = "60 GHz link"
+desc = "ST60A3H1, 1.8 V translator, eUSB2 repeater, link LED"
+[boards.sheets.03_usb_power]
+title = "USB and power"
+desc = "USB-C, USB path switches, 3.3 V and 1.8 V regulators"
+
+[parts]
+role_field = "comms_role"
+
+[layers.notes]
+"F.Cu" = "Every part, and the signals. Top edge: the ST60A3H1 on its grounded island, with the copper-free ring round it that ST's own board has."
+"In1.Cu" = "Solid ground, 0.21 mm under the parts and under the antenna."
+"In2.Cu" = "The supplies: +3V3, with +1V8 over the link section and the ST60's own supply under the island."
+"B.Cu" = "Ground, the USB pair up the left side from the connector's switch to the repeater, the eUSB2 pair under the island, and what the front had no room for."
+"Edge.Cuts" = "28 x 63 mm, four M2.5 holes mirrored about the antenna's axis."
+
+# KiCad 9's library names these models and does not ship them
+[models."Connector_USB.3dshapes/USB_C_Receptacle_HRO_TYPE-C-31-M-12.step"]
+path = "hardware/parts/3dmodels/HRO_TYPE-C-31-M-12.step"
+offset = [-4.45, -3.65, 0]
+rotate = [-90, 0, 0]
+
+[models."Inductor_SMD.3dshapes/AOTA-B201610SR47MT.STEP"]
+path = "hardware/parts/3dmodels/AOTA-B201610SR47MT.STEP"
+offset = [0, 0, 0]
+rotate = [0, 0, 0]

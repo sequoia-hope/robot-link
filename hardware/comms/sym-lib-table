@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "comms")(type "KiCad")(uri "${KIPRJMOD}/../parts/comms.kicad_sym")(options "")(descr "comms: the project's own symbols"))
+)

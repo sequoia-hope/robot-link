@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "comms")(type "KiCad")(uri "${KIPRJMOD}/../parts/comms.pretty")(options "")(descr "comms: the project's own footprints"))
+)

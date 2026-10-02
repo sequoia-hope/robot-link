@@ -1,0 +1,18 @@
+{
+ "title": "comms",
+ "built": "2026-10-02T01:20:34",
+ "config": "pcbview.toml",
+ "boards": [
+  {
+   "id": "a",
+   "name": "comms rev A",
+   "page": "index.html",
+   "embed": "index.html",
+   "source": {
+    "kind": "file",
+    "pcb": "hardware/comms/comms.kicad_pcb",
+    "sch": "hardware/comms/comms.kicad_sch"
+   }
+  }
+ ]
+}

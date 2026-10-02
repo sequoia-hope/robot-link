@@ -1,0 +1,5 @@
+(version 1)
+
+(rule "RP2350 reference copper keeps its own clearance"
+  (condition "A.intersectsArea('RP2350 reference') && B.intersectsArea('RP2350 reference')")
+  (constraint clearance (min 0.12mm)))

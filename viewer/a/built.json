@@ -1,0 +1,250 @@
+{
+ "sch": {
+  "schematic": "comms.kicad_sch",
+  "pdf": "comms.pdf",
+  "sheets": [
+   {
+    "sheet": "root",
+    "title": "Top level",
+    "desc": "the sheets and what is on each \u00b7 0 symbols",
+    "file": "comms.svg",
+    "source": "comms.kicad_sch",
+    "paper": "A4",
+    "page": "1",
+    "symbols": 0,
+    "size_mm": [
+     297.0022,
+     210.0072
+    ]
+   },
+   {
+    "sheet": "01_mcu",
+    "title": "RP2350A",
+    "desc": "RP2350A, core regulator, crystal, QSPI flash, SWD, buttons, headers \u00b7 37 symbols",
+    "file": "comms-01_mcu.svg",
+    "source": "01_mcu.kicad_sch",
+    "paper": "A3",
+    "page": "2",
+    "symbols": 37,
+    "size_mm": [
+     419.989,
+     297.0022
+    ]
+   },
+   {
+    "sheet": "02_link",
+    "title": "60 GHz link",
+    "desc": "ST60A3H1, 1.8 V translator, eUSB2 repeater, link LED \u00b7 21 symbols",
+    "file": "comms-02_link.svg",
+    "source": "02_link.kicad_sch",
+    "paper": "A3",
+    "page": "3",
+    "symbols": 21,
+    "size_mm": [
+     419.989,
+     297.0022
+    ]
+   },
+   {
+    "sheet": "03_usb_power",
+    "title": "USB and power",
+    "desc": "USB-C, USB path switches, 3.3 V and 1.8 V regulators \u00b7 20 symbols",
+    "file": "comms-03_usb_power.svg",
+    "source": "03_usb_power.kicad_sch",
+    "paper": "A2",
+    "page": "4",
+    "symbols": 20,
+    "size_mm": [
+     594.0044,
+     419.989
+    ]
+   }
+  ]
+ },
+ "layers": {
+  "board": "comms.kicad_pcb",
+  "generated": "2026-10-02",
+  "view_mm": [
+   84.74,
+   38.74,
+   30.52,
+   65.52
+  ],
+  "size_mm": [
+   28.0,
+   63.0
+  ],
+  "round": null,
+  "polar": null,
+  "thickness": 1.6,
+  "plate": "#c8c8c8",
+  "body": "body.svg",
+  "vias": 243,
+  "nets": 80,
+  "footprints": 78,
+  "front": 78,
+  "back": 0,
+  "tracks": 741,
+  "length_mm": 1257.4,
+  "layers": [
+   {
+    "name": "F.Cu",
+    "slug": "f",
+    "kind": "copper",
+    "file": "f.svg",
+    "color": "#C83434",
+    "note": "Every part, and the signals. Top edge: the ST60A3H1 on its grounded island, with the copper-free ring round it that ST's own board has.",
+    "tracks": 575,
+    "length_mm": 769.8,
+    "pads": 355,
+    "zones": [
+     "+1V1",
+     "GND",
+     "VREG_LX",
+     "+3V3"
+    ]
+   },
+   {
+    "name": "In1.Cu",
+    "slug": "in1",
+    "kind": "copper",
+    "file": "in1.svg",
+    "color": "#7FC87F",
+    "note": "Solid ground, 0.21 mm under the parts and under the antenna.",
+    "tracks": 0,
+    "length_mm": 0.0,
+    "pads": 51,
+    "zones": [
+     "GND"
+    ]
+   },
+   {
+    "name": "In2.Cu",
+    "slug": "in2",
+    "kind": "copper",
+    "file": "in2.svg",
+    "color": "#CE7D2C",
+    "note": "The supplies: +3V3, with +1V8 over the link section and the ST60's own supply under the island.",
+    "tracks": 0,
+    "length_mm": 0.0,
+    "pads": 51,
+    "zones": [
+     "+1V8",
+     "+3V3",
+     "ST_VDD"
+    ]
+   },
+   {
+    "name": "B.Cu",
+    "slug": "b",
+    "kind": "copper",
+    "file": "b.svg",
+    "color": "#4D7FC4",
+    "note": "Ground, the USB pair up the left side from the connector's switch to the repeater, the eUSB2 pair under the island, and what the front had no room for.",
+    "tracks": 166,
+    "length_mm": 487.6,
+    "pads": 51,
+    "zones": [
+     "GND"
+    ]
+   },
+   {
+    "name": "Edge.Cuts",
+    "slug": "edge",
+    "kind": "outline",
+    "file": "edge.svg",
+    "color": "#D0D2CD",
+    "note": "28 x 63 mm, four M2.5 holes mirrored about the antenna's axis."
+   },
+   {
+    "name": "F.Silkscreen",
+    "slug": "silk_f",
+    "kind": "silk",
+    "file": "silk_f.svg",
+    "color": "#F2EDA1",
+    "note": "Silkscreen, front: reference designators and markings as printed."
+   },
+   {
+    "name": "B.Silkscreen",
+    "slug": "silk_b",
+    "kind": "silk",
+    "file": "silk_b.svg",
+    "color": "#E8B2A7",
+    "note": "Silkscreen, back, seen through the board (mirror the view to read it)."
+   },
+   {
+    "name": "F.Fab",
+    "slug": "fab_f",
+    "kind": "fab",
+    "file": "fab_f.svg",
+    "color": "#DDE1E8",
+    "note": "Part bodies and reference designators, front: what each piece of copper belongs to."
+   }
+  ]
+ },
+ "3d": {
+  "board": "comms.kicad_pcb",
+  "generated": "2026-10-02",
+  "glb": "board.glb",
+  "bytes": 3440612,
+  "kicad_bytes": 16059908,
+  "parts": 78,
+  "modelled": 70,
+  "no_model": [
+   "H1",
+   "H2",
+   "H3",
+   "H4",
+   "U4",
+   "U5"
+  ],
+  "missing": [
+   "U9",
+   "U10"
+  ],
+  "empty": [],
+  "substituted": [
+   "J1",
+   "L1"
+  ],
+  "resolved": [
+   "C6",
+   "C7",
+   "U1"
+  ],
+  "flattened": [],
+  "boxed": [
+   "U9",
+   "U10"
+  ],
+  "why": {
+   "U9": "no such file",
+   "U10": "no such file"
+  },
+  "missing_models": [
+   "${KICAD9_3DMODEL_DIR}/Package_DFN_QFN.3dshapes/Texas_UQFN-10_1.5x2mm_P0.5mm.step"
+  ],
+  "boxes": [
+   {
+    "model": "${KICAD9_3DMODEL_DIR}/Package_DFN_QFN.3dshapes/Texas_UQFN-10_1.5x2mm_P0.5mm.step",
+    "why": "no such file",
+    "refs": [
+     "U9",
+     "U10"
+    ]
+   }
+  ],
+  "resolved_how": {
+   "legacy": 3,
+   "found": 0
+  },
+  "triangles": 294013,
+  "primitives": 185
+ },
+ "when": "2026-10-02 01:20",
+ "source": {
+  "kind": "file",
+  "pcb": "hardware/comms/comms.kicad_pcb",
+  "sch": "hardware/comms/comms.kicad_sch"
+ }
+}
