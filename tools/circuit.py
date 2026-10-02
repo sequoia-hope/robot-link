@@ -167,7 +167,7 @@ GP = {
     8: "USB_SEL_MCU",    # high: the RP2350's own USB goes to the repeater
     9: "USB_SEL_CONN",   # high: the USB-C connector goes to the eUSB2 repeater
     10: "RF_EN_GP",      # RF_EN, through the divider to 1.8 V
-    11: "ST_PWR_EN",     # low: the 1.8 V regulator off (a cold reset of the ST60)
+    11: "ST_PWR_EN",     # high: the 1.8 V regulator on. Low, or not driven: off (a cold reset of the ST60)
     12: "TUN_G3",        # I2C0 SDA <-> ST60 GPIO[3], the tunnelled SDA
     13: "TUN_G2",        # I2C0 SCL <-> ST60 GPIO[2], the tunnelled SCL
     14: "ST_LINK",       # LINK_STATUS
@@ -287,7 +287,7 @@ def mcu():
         "Raspberry Pi debug connector: SWCLK, GND, SWDIO")
 
     add("D3", LED, "blue", FP_LED, {"1": "GND", "2": "LED_A"}, "LED", "user LED, GPIO25")
-    add("R9", R, "1k", FP_R["0402"], {"1": "LED", "2": "LED_A"}, "LED", "LED series")
+    add("R9", R, "220R", FP_R["0402"], {"1": "LED", "2": "LED_A"}, "LED", "LED series (Vf 3.1 V)")
 
     # The headers, 0.9 inch apart. Each runs in the order the chip's pins
     # come off that side, so nothing crosses on the way out. Besides GPIO
@@ -332,7 +332,10 @@ def link():
         "the ST60's supply link: lift it to measure the current")
     add("C21", C, "100n", FP_C["0402"], {"1": "ST_VDD", "2": "GND"}, "ST60", "VDD_1V8, ball C3")
     add("C22", C, "100n", FP_C["0402"], {"1": "ST_VDD", "2": "GND"}, "ST60", "VDD_IO, ball L3")
-    add("C23", C, "1u", FP_C["0402"], {"1": "ST_VDD", "2": "GND"}, "ST60", "ST60 supply bulk")
+    # No bulk here: the ST60 wants its supply to rise and fall in 50 us to
+    # 1 ms (DS table 8), and the regulator's 120 R discharge has to empty
+    # everything on the rail in that time. 1 u at the regulator, 470 n at the
+    # repeater and three 100 n make 1.8 uF, about 0.5 ms from 90 % to 10 %.
 
     # RF_EN: 3.3 V to 1.8 V by divider, as ST does (1k5/1k8). The 1k8 also
     # holds RF_EN low against the ST60's internal pull-up until the RP2350
@@ -343,13 +346,20 @@ def link():
     # booted, and the repeater's RST_N pulls up through 10 k: 1 k holds it low.
     add("R23", R, "1k", FP_R["0402"], {"1": "ST_LINK_STATUS", "2": "GND"}, "ST60",
         "LINK_STATUS pull-down, against the PTN3222's RST_N pull-up")
-    # No pull-ups are fitted on the configuration bus or on GPIO[2]/[3]: ST
-    # leaves its own (R17, R20, R35-R39) unfitted too. The ST60 pulls
-    # CFG_SCL/CFG_SDA up internally and the translator adds its own once
-    # enabled. GPIO[2]/[3] default to inputs with a weak pull-down, against
-    # the translator's weak pull-up: drive them from the RP2350, or set them
-    # up in the ST60, rather than leave them idle. A tunnelled I2C bus wants
-    # real pull-ups on its far side (DS table 3, note 4) -- on J2, at 3.3 V.
+    # Pull-ups on the 1.8 V side of the configuration bus and of GPIO[2]/[3]
+    # (the tunnelled SCL/SDA). The ST60 and the PTN3222 both ask for external
+    # ones (DS14598 table 3, notes 1 and 4; PTN3222 table 5), and without
+    # them GPIO[2]/[3] -- inputs with a 20-120 k pull-down after reset --
+    # would sit mid-rail against the translator's 40 k pull-ups. 4k7 is as
+    # low as the translator's pass gate lets the far side pull down cleanly;
+    # anything added on the 3.3 V side (J2, J3) should be 8k2 or more.
+    for ref, net in (("R24", "ST_SCL"), ("R25", "ST_SDA"), ("R26", "ST_G2"), ("R27", "ST_G3")):
+        add(ref, R, "4k7", FP_R["0402"], {"1": net, "2": "+1V8"}, "ST60", f"{net} pull-up")
+    # MODE_INT is a boot strap, read as 0 on the ST60's internal pull-down
+    # alone. If the 1.8 V rail is cycled with the translator enabled, the
+    # translator's 40 k pull-up would be pulling against it: 4k7 settles it.
+    add("R31", R, "4k7", FP_R["0402"], {"1": "ST_MODE_INT", "2": "GND"}, "ST60",
+        "MODE_INT strap: 0 at power-up, whatever the translator is doing")
 
     # The translator. A side at 1.8 V, B at 3.3 V; OE is referenced to VCCA
     # but takes 5.5 V, so the GPIO drives it directly. Pulled low: the ST60
@@ -382,7 +392,7 @@ def link():
          "5": "ST_LINK_STATUS", "6": "ST_SDA", "7": "ST_SCL",
          "8": "RPT_DM", "9": "RPT_DP", "10": "+3V3", "11": "+1V8", "12": "+1V8"},
         "repeater", "eUSB2 <-> USB 2.0 repeater, host or device side")
-    add("C26", C, "1u", FP_C["0402"], {"1": "+1V8", "2": "GND"}, "repeater", "VDD1V8")
+    add("C26", C, "470n", FP_C["0402"], {"1": "+1V8", "2": "GND"}, "repeater", "VDD1V8 (NXP's value)")
     add("C27", C, "100p", FP_C["0402"], {"1": "+1V8", "2": "GND"}, "repeater", "VDD1V8")
     add("C28", C, "1u", FP_C["0402"], {"1": "+3V3", "2": "GND"}, "repeater", "VDD3V3")
     add("C29", C, "100p", FP_C["0402"], {"1": "+3V3", "2": "GND"}, "repeater", "VDD3V3")
@@ -394,7 +404,7 @@ def link():
         "link LED", "base resistor")
     add("D2", LED, "green", FP_LED, {"1": "LINK_K", "2": "LINK_A"}, "link LED",
         "lit while the RF link is up")
-    add("R30", R, "1k", FP_R["0402"], {"1": "+3V3", "2": "LINK_A"}, "link LED",
+    add("R30", R, "220R", FP_R["0402"], {"1": "+3V3", "2": "LINK_A"}, "link LED",
         "LED series")
     return out
 
@@ -456,7 +466,7 @@ def usb_power():
     add("C5", C, "10u", FP_C["0805"], {"1": "+3V3", "2": "GND"}, "3V3", "LDO output")
     add("C19", C, "10u", FP_C["0805"], {"1": "+3V3", "2": "GND"}, "3V3", "3V3 bulk")
     add("D1", LED, "green", FP_LED, {"1": "GND", "2": "PWR_A"}, "3V3", "power LED")
-    add("R14", R, "1k", FP_R["0402"], {"1": "+3V3", "2": "PWR_A"}, "3V3", "LED series")
+    add("R14", R, "220R", FP_R["0402"], {"1": "+3V3", "2": "PWR_A"}, "3V3", "LED series (Vf 3.1 V)")
 
     # 1.8 V for the ST60, the repeater and the translator's A side. The
     # TLV755P discharges its output when disabled, which is what makes
@@ -468,8 +478,10 @@ def usb_power():
         "1V8", "1.8 V LDO with output discharge")
     add("C32", C, "1u", FP_C["0402"], {"1": "+3V3", "2": "GND"}, "1V8", "LDO input")
     add("C33", C, "1u", FP_C["0402"], {"1": "+1V8", "2": "GND"}, "1V8", "LDO output")
-    add("R15", R, "10k", FP_R["0402"], {"1": "+3V3", "2": "ST_PWR_EN"}, "1V8",
-        "EN pull-up: 1.8 V on unless the RP2350 pulls it down")
+    # Off until the RP2350 raises EN: the rail then always rises with 3V3
+    # settled, at the regulator's own controlled rate (4k7: erratum E9).
+    add("R15", R, "4k7", FP_R["0402"], {"1": "GND", "2": "ST_PWR_EN"}, "1V8",
+        "EN pull-down: 1.8 V off until the RP2350 turns it on")
     return out
 
 
@@ -479,6 +491,10 @@ def mechanical():
         out.append(Comp(f"H{i}", "Mechanical:MountingHole", "M2.5",
                         "MountingHole:MountingHole_2.7mm_M2.5", {}, "01_mcu",
                         "mechanical", note="M2.5; the pattern is mirror-symmetric about the antenna's axis"))
+    for i in range(1, 4):
+        out.append(Comp(f"FID{i}", "Mechanical:Fiducial", "Fiducial",
+                        "Fiducial:Fiducial_1mm_Mask2mm", {}, "01_mcu",
+                        "mechanical", note="for the placement machine; three, not symmetric"))
     return out
 
 

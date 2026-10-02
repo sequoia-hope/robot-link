@@ -103,7 +103,7 @@ def st60():
         o.append(_line(name, f"cross{k}", px - dx, py - dy, px + dx, py + dy, "Dwgs.User", 0.05))
     for num, (x, y) in sorted(ST60_BALLS.items()):
         o.append(f'\t(pad "{num}" smd circle (at {x:.4f} {y:.4f}) (size 0.25 0.25)\n'
-                 f'\t\t(layers "F.Cu" "F.Mask" "F.Paste") (solder_mask_margin 0.0375)\n'
+                 f'\t\t(layers "F.Cu" "F.Mask" "F.Paste") (solder_mask_margin 0.025)\n'
                  f'\t\t(uuid "{uid(name, "pad", num)}"))\n')
     o.append('\t(embedded_fonts no)\n)\n')
     return name, "".join(o)

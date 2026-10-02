@@ -24,85 +24,38 @@ L114 101
 <path d="M112 103 A2 2 0.0 0 0 114 101" />
 </g>
 <g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="111" cy="99.6" r="1.35" />
+<circle cx="97.11" cy="97.25" r="0.325" />
 </g>
 <g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="101.375" cy="71.675" r="0.125" />
+<circle cx="102.89" cy="97.25" r="0.325" />
+</g>
+<g style="fill:none;
+stroke:#c8c8c8; stroke-width:0.6; stroke-opacity:1;
+stroke-linecap:round; stroke-linejoin:round;">
+<path d="M95.68 96.17
+L95.68 97.27
+" />
+<path d="M95.68 100.6
+L95.68 101.2
+" />
+<path d="M104.32 96.17
+L104.32 97.27
+" />
+<path d="M104.32 100.6
+L104.32 101.2
+" />
 </g>
 <g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="101.375" cy="70.3" r="0.125" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="101.375" cy="68.925" r="0.125" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="100" cy="71.675" r="0.125" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="100" cy="70.3" r="0.125" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="100" cy="68.925" r="0.125" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="98.625" cy="71.675" r="0.125" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="98.625" cy="70.3" r="0.125" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="98.625" cy="68.925" r="0.125" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="88.57" cy="49.5" r="0.5" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="88.57" cy="52.04" r="0.5" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="88.57" cy="54.58" r="0.5" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="88.57" cy="57.12" r="0.5" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="88.57" cy="59.66" r="0.5" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="88.57" cy="62.2" r="0.5" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="88.57" cy="64.74" r="0.5" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="88.57" cy="67.28" r="0.5" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="88.57" cy="69.82" r="0.5" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="88.57" cy="72.36" r="0.5" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="88.57" cy="74.9" r="0.5" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="88.57" cy="77.44" r="0.5" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="88.57" cy="79.98" r="0.5" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="88.57" cy="82.52" r="0.5" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="88.57" cy="85.06" r="0.5" />
-</g>
-<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="88.57" cy="87.6" r="0.5" />
+<circle cx="111" cy="43.8" r="1.35" />
 </g>
 <g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
 <circle cx="89" cy="43.8" r="1.35" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="111" cy="99.6" r="1.35" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="89" cy="99.6" r="1.35" />
 </g>
 <g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
 <circle cx="111.43" cy="49.5" r="0.5" />
@@ -153,31 +106,78 @@ L114 101
 <circle cx="111.43" cy="87.6" r="0.5" />
 </g>
 <g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="97.11" cy="97.25" r="0.325" />
+<circle cx="88.57" cy="49.5" r="0.5" />
 </g>
 <g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="102.89" cy="97.25" r="0.325" />
-</g>
-<g style="fill:none;
-stroke:#c8c8c8; stroke-width:0.6; stroke-opacity:1;
-stroke-linecap:round; stroke-linejoin:round;">
-<path d="M95.68 96.17
-L95.68 97.27
-" />
-<path d="M95.68 100.6
-L95.68 101.2
-" />
-<path d="M104.32 96.17
-L104.32 97.27
-" />
-<path d="M104.32 100.6
-L104.32 101.2
-" />
+<circle cx="88.57" cy="52.04" r="0.5" />
 </g>
 <g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="111" cy="43.8" r="1.35" />
+<circle cx="88.57" cy="54.58" r="0.5" />
 </g>
 <g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
-<circle cx="89" cy="99.6" r="1.35" />
+<circle cx="88.57" cy="57.12" r="0.5" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="88.57" cy="59.66" r="0.5" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="88.57" cy="62.2" r="0.5" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="88.57" cy="64.74" r="0.5" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="88.57" cy="67.28" r="0.5" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="88.57" cy="69.82" r="0.5" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="88.57" cy="72.36" r="0.5" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="88.57" cy="74.9" r="0.5" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="88.57" cy="77.44" r="0.5" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="88.57" cy="79.98" r="0.5" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="88.57" cy="82.52" r="0.5" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="88.57" cy="85.06" r="0.5" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="88.57" cy="87.6" r="0.5" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="101.375" cy="71.675" r="0.125" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="101.375" cy="70.3" r="0.125" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="101.375" cy="68.925" r="0.125" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="100" cy="71.675" r="0.125" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="100" cy="70.3" r="0.125" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="100" cy="68.925" r="0.125" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="98.625" cy="71.675" r="0.125" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="98.625" cy="70.3" r="0.125" />
+</g>
+<g style="fill:#c8c8c8; fill-opacity:1; stroke:none;">
+<circle cx="98.625" cy="68.925" r="0.125" />
 </g>
 </svg>

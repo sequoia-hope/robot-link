@@ -2,11 +2,14 @@
  "board": "comms.kicad_pcb",
  "generated": "2026-10-02",
  "glb": "board.glb",
- "bytes": 3440612,
- "kicad_bytes": 16059908,
- "parts": 78,
- "modelled": 70,
+ "bytes": 3782892,
+ "kicad_bytes": 17652820,
+ "parts": 85,
+ "modelled": 74,
  "no_model": [
+  "FID1",
+  "FID2",
+  "FID3",
   "H1",
   "H2",
   "H3",
@@ -34,8 +37,8 @@
   "U10"
  ],
  "why": {
-  "U9": "no such file",
-  "U10": "no such file"
+  "U10": "no such file",
+  "U9": "no such file"
  },
  "missing_models": [
   "${KICAD9_3DMODEL_DIR}/Package_DFN_QFN.3dshapes/Texas_UQFN-10_1.5x2mm_P0.5mm.step"
@@ -54,6 +57,6 @@
   "legacy": 3,
   "found": 0
  },
- "triangles": 294013,
- "primitives": 185
+ "triangles": 326561,
+ "primitives": 199
 }

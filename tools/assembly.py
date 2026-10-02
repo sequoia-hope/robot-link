@@ -175,7 +175,8 @@ def sidecar():
         key = f.get("partKey") or ""
         value = key.rsplit("|", 1)[-1]
         if f["check"] == "dnp-reason":
-            comps[f["ref"]] = {"dnpReason": "A mounting hole: there is no part."}
+            what = "A fiducial mark" if "Fiducial" in key else "A mounting hole"
+            comps[f["ref"]] = {"dnpReason": what + ": there is no part."}
         elif value in ANSWERS and key not in parts:
             row = lcsc[(value, by_value[value])]
             parts[key] = dict(ANSWERS[value], mpn=f"{row['mpn']} (LCSC {row['lcsc']})")

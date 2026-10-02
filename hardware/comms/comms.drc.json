@@ -1,0 +1,123 @@
+{
+    "$schema": "https://schemas.kicad.org/drc.v1.json",
+    "coordinate_units": "mm",
+    "date": "2026-10-02T02:18:53-0700",
+    "included_severities": [
+        "error",
+        "warning",
+        "exclusion"
+    ],
+    "kicad_version": "9.0.8",
+    "schematic_parity": [],
+    "source": "comms.kicad_pcb",
+    "unconnected_items": [],
+    "violations": [
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 105.682,
+                        "y": 101.5
+                    },
+                    "uuid": "54dbad55-c7cc-4bb3-bc42-e8effce66714"
+                },
+                {
+                    "description": "Pad [<no net>] of FID3 on F.Cu",
+                    "pos": {
+                        "x": 106.6,
+                        "y": 100.7
+                    },
+                    "uuid": "bc44cd81-2acf-4fdd-a2a7-a55588f06b19"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 94.318,
+                        "y": 101.5
+                    },
+                    "uuid": "7d26d5ce-9e18-418d-9e2f-9ca3f6aa9b6a"
+                },
+                {
+                    "description": "Pad [<no net>] of FID2 on F.Cu",
+                    "pos": {
+                        "x": 93.4,
+                        "y": 100.7
+                    },
+                    "uuid": "ee3d623f-6204-417f-a114-f08602adead7"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Clearance violation (pad clearance 0.6000 mm; actual 0.4877 mm)",
+            "items": [
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 105.682,
+                        "y": 101.5
+                    },
+                    "uuid": "54dbad55-c7cc-4bb3-bc42-e8effce66714"
+                },
+                {
+                    "description": "Pad [<no net>] of FID3 on F.Cu",
+                    "pos": {
+                        "x": 106.6,
+                        "y": 100.7
+                    },
+                    "uuid": "bc44cd81-2acf-4fdd-a2a7-a55588f06b19"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
+            "description": "Clearance violation (pad clearance 0.6000 mm; actual 0.4877 mm)",
+            "items": [
+                {
+                    "description": "Via [GND] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 94.318,
+                        "y": 101.5
+                    },
+                    "uuid": "7d26d5ce-9e18-418d-9e2f-9ca3f6aa9b6a"
+                },
+                {
+                    "description": "Pad [<no net>] of FID2 on F.Cu",
+                    "pos": {
+                        "x": 93.4,
+                        "y": 100.7
+                    },
+                    "uuid": "ee3d623f-6204-417f-a114-f08602adead7"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "Via [ST_SCL] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 104.55,
+                        "y": 44.4
+                    },
+                    "uuid": "3b7c7eae-710e-4b52-98f9-8f54bd691bfb"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        }
+    ]
+}

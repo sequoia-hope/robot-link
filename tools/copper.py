@@ -35,14 +35,16 @@ VIA = (0.46, 0.2)
 MOUNT_KEEP = 2.9               # radius kept clear round an M2.5 hole (the screw head)
 
 # Where a net's plane is: a via for that net has to land on it. In2 is +3V3
-# except under the antenna island, where it is the ST60's own supply, and
-# over the 1.8 V parts of the link section: the translator's A side, the
-# regulator's output on its right, the repeater's 1.8 V pins on its left
-# (but not the repeater's 3V3 capacitors below it), R20 and J2's pin 1.
-PLANE = {"GND": "In1.Cu", "+3V3": "In2.Cu", "ST_VDD": "In2.Cu", "+1V8": "In2.Cu"}
-ST_VDD_RECT = (-10.0, 0.0, 3.6, PL.ST60[1] + PL.ISLAND[1] + PL.MOAT)
-V18_POLY = [(-13.2, 7.5), (7.2, 7.5), (7.2, 12.9), (-5.0, 12.9), (-5.0, 9.8), (-10.4, 9.8),
-            (-10.4, 10.6), (-13.2, 10.6)]
+# except over the link section, where it is +1V8: under the antenna island
+# and either side of it, the translator's A side, the regulator's output,
+# the repeater's 1.8 V pins (but not its 3V3 capacitors below it). Its west
+# edge stops short of the USB pair that comes up the board's left side on
+# the back, so that pair has +3V3 under it all the way; J2's pin 1 is
+# outside it and gets a track. (ST_VDD, the ST60's own supply after the
+# 0 R link, is tracks on the front and has no plane.)
+PLANE = {"GND": "In1.Cu", "+3V3": "In2.Cu", "+1V8": "In2.Cu"}
+V18_POLY = [(-8.6, 0.0), (9.2, 0.0), (9.2, 7.5), (7.3, 7.5), (7.3, 12.9), (-5.0, 12.9),
+            (-5.0, 9.8), (-8.6, 9.8)]
 CU_LAYERS = ("F.Cu", "In1.Cu", "In2.Cu", "B.Cu")
 LID = {"F.Cu": pcbnew.F_Cu, "In1.Cu": pcbnew.In1_Cu, "In2.Cu": pcbnew.In2_Cu, "B.Cu": pcbnew.B_Cu}
 
@@ -68,6 +70,10 @@ class Model:
         for fp in board.GetFootprints():
             for pad in fp.Pads():
                 self.add_pad(pad)
+            # a fiducial is its copper dot and the bare ring round it: nothing
+            # of any net comes inside the mask opening
+            if fp.GetReference().startswith("FID"):
+                self._add("F.Cu", Point(*self.xy(fp.GetPosition())).buffer(1.0 + 0.1), "", "pad")
         for t in board.GetTracks():
             self.add_track(t)
         # the small pours on the front (the reference's, round the RP2350):
@@ -170,7 +176,7 @@ class Model:
     def off_mounts(self, x, y, r):
         return all(math.hypot(x - mx, y - my) >= MOUNT_KEEP + r for mx, my in self.mounts)
 
-    def via_ok(self, net, x, y, size=VIA, ring_ok=False):
+    def via_ok(self, net, x, y, size=VIA, ring_ok=False, hole_hole=HOLE_HOLE):
         dia, drill = size
         g = Point(x, y).buffer(dia / 2)
         if not self.on_board(g) or not self.off_mounts(x, y, dia / 2):
@@ -179,7 +185,7 @@ class Model:
             return False
         for hx, hy, hr, hn in self.holes:
             d = math.hypot(x - hx, y - hy)
-            if d - hr - drill / 2 < HOLE_HOLE:
+            if d - hr - drill / 2 < hole_hole:
                 return False
             if hn != net and d - hr - dia / 2 < HOLE_CLEAR:
                 return False
@@ -203,12 +209,10 @@ def plane_ok(net, x, y):
     """Is (x, y) over this net's plane, far enough in to be joined to it?"""
     pt = Point(x, y)
     v18 = Polygon(V18_POLY)
-    if net == "ST_VDD":
-        return in_rect(x, y, ST_VDD_RECT, 0.5)
     if net == "+1V8":
         return v18.buffer(-0.45).contains(pt)
     if net == "+3V3":
-        return not in_rect(x, y, ST_VDD_RECT, -0.6) and not v18.buffer(0.6).contains(pt)
+        return not v18.buffer(0.6).contains(pt)
     return True
 
 
@@ -216,6 +220,15 @@ def plane_ok(net, x, y):
 # and st60_copper see to them) and the RP2350, whose supply pins reach their
 # capacitors on the reference's tracks -- the capacitor gets the tap.
 NO_TAP = {"U4", "U1"}
+# ... and the 3V3 capacitors round the RP2350 that the reference feeds from a
+# pour on the front. Here the tracks copied from it still join them to the
+# ring under the chip, which would pass for "already on the plane" by way of
+# a via millimetres off: each of these gets a via of its own if one fits.
+OWN_TAP = {("C14", "+3V3"), ("C15", "+3V3"), ("C16", "+3V3"), ("C18", "+3V3")}
+# More vias for one pad than the one that joins it: (reference, pad) -> how
+# many are tried for. The 3.3 V regulator's tab is its heat sink and the
+# whole board's supply.
+MORE_TAPS = {("U2", "2"): 5}
 DIRS = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
 
 
@@ -245,7 +258,8 @@ def plane_taps(B, ox, oy):
         g = M._poly(pad, "F.Cu")
         if net not in joined:
             joined[net] = M.on_plane(net)
-        if joined[net].intersects(g):
+        own = (ref, net) in OWN_TAP
+        if joined[net].intersects(g) and not own:
             return True                # already joined to a via, perhaps through its neighbours
         bb = g.bounds
         w = max(0.15, min(0.3, bb[2] - bb[0], bb[3] - bb[1]))
@@ -261,7 +275,7 @@ def plane_taps(B, ox, oy):
                 best = (vx, vy, False)
                 break
         if best is None:
-            for step in range(0, 22):
+            for step in range(0, 8 if own else 22):
                 for dx, dy in dirs:
                     n = math.hypot(dx, dy)
                     ux, uy = dx / n, dy / n
@@ -276,6 +290,8 @@ def plane_taps(B, ox, oy):
                         break
                 if best:
                     break
+        if best is None and own:
+            return True                # it keeps the reference's way to the plane
         if best is None:
             # no room for a via: a track straight to a neighbour's pad on the
             # same net, which has or will have one (the repeater's 1.8 V pins
@@ -315,47 +331,43 @@ def plane_taps(B, ox, oy):
             failed.append(f"{ref}.{pad.GetNumber()} ({net}) not joined")
     if failed:
         print("  ! no tap found for: " + ", ".join(failed))
+    # the extra ones: round the pad's edge, as many as fit
+    for ref, pad, net, x, y, fx, fy in pads:
+        want = MORE_TAPS.get((ref, pad.GetNumber()), 0)
+        bb = M._poly(pad, "F.Cu").bounds
+        if not want or (bb[2] - bb[0]) * (bb[3] - bb[1]) < 4.0:      # the tab, not the pin
+            continue
+        r = VIA[0] / 2 + 0.12
+        ring = [(bx, by) for bx in (bb[0] - r, bb[2] + r) for by in
+                [bb[1] + k * (bb[3] - bb[1]) / 4 for k in range(5)]] + \
+               [(bx, by) for by in (bb[1] - r, bb[3] + r) for bx in
+                [bb[0] + k * (bb[2] - bb[0]) / 4 for k in range(5)]]
+        for vx, vy in ring:
+            if want <= 0:
+                break
+            vx, vy = round(vx, 3), round(vy, 3)
+            tx, ty = min(max(vx, bb[0] + 0.2), bb[2] - 0.2), min(max(vy, bb[1] + 0.2), bb[3] - 0.2)
+            if plane_ok(net, vx, vy) and M.via_ok(net, vx, vy) and _spaced(M, vx, vy, 0.9) \
+                    and M.track_ok(net, "F.Cu", (tx, ty), (vx, vy), 0.3):
+                B.track(net, "F.Cu", [(tx, ty), (vx, vy)], 0.3)
+                B.via(net, vx, vy)
+                M.add_via(net, vx, vy, *VIA)
+                M._add("F.Cu", LineString([(tx, ty), (vx, vy)]).buffer(0.15), net, "track")
+                made += 1
+                want -= 1
     return made
 
 
 # ------------------------------------------------------------- stitching ---
-FENCE_PITCH = 0.9
 GRID = 2.5
 
 
 def stitch(board, ox, oy, add_via):
-    """Ground vias on the routed board; add_via(x, y) makes one. Returns
-    (fence, grid): how many went in round the antenna and across the board.
-
-    Round the antenna, what ST's board has: a row just outside the moat and
-    a row just inside the island's edge, wherever a via is legal -- which on
-    the side the ST60's signals leave by, and where the translator's bundle
-    passes underneath, is not everywhere. Elsewhere a 2.5 mm grid, to tie
-    the front and back pours to the In1 plane.
-    """
+    """Ground vias on the routed board; add_via(x, y) makes one. Returns how
+    many went in: a 2.5 mm grid, wherever a via is legal, to tie the front
+    and back pours to the In1 plane. (The antenna's own vias are ST's
+    pattern, laid by gen_board before anything is routed.)"""
     M = Model(board, ox, oy)
-    x0, y0, x1, y1 = ring_rect()
-    cx, cy = PL.ST60
-    hx, hy = PL.ISLAND
-    spots = []
-    def row(ax, ay, bx, by):
-        n = max(1, int(round(math.hypot(bx - ax, by - ay) / FENCE_PITCH)))
-        return [(ax + (bx - ax) * i / n, ay + (by - ay) * i / n) for i in range(n + 1)]
-    out = 0.45                                  # outside the moat
-    spots += row(x0 - out, 0.75, x0 - out, y1 + out) + row(x0 - out, y1 + out, x1 + out, y1 + out) \
-           + row(x1 + out, y1 + out, x1 + out, 0.75)
-    ins = 0.4                                   # inside the island's edge
-    spots += row(cx - hx + ins, cy - hy + ins, cx - hx + ins, cy + hy - ins) \
-           + row(cx - hx + ins, cy + hy - ins, cx + hx - ins, cy + hy - ins) \
-           + row(cx + hx - ins, cy + hy - ins, cx + hx - ins, cy - hy + ins) \
-           + row(cx + hx - ins, cy - hy + ins, cx - hx + ins, cy - hy + ins)
-    fence = 0
-    for x, y in spots:
-        x, y = round(x, 3), round(y, 3)
-        if M.via_ok("GND", x, y, ring_ok=True) and _spaced(M, x, y, 0.75):
-            add_via(x, y)
-            M.add_via("GND", x, y, *VIA)
-            fence += 1
     grid = 0
     w, h = PL.W / 2, PL.H
     ny, nx = int(h / GRID), int(2 * w / GRID)
@@ -367,7 +379,7 @@ def stitch(board, ox, oy, add_via):
                 add_via(x, y)
                 M.add_via("GND", x, y, *VIA)
                 grid += 1
-    return fence, grid
+    return grid
 
 
 def _spaced(M, x, y, gap):

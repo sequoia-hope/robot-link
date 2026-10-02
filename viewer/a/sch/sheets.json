@@ -19,12 +19,12 @@
   {
    "sheet": "01_mcu",
    "title": "RP2350A",
-   "desc": "RP2350A, core regulator, crystal, QSPI flash, SWD, buttons, headers \u00b7 37 symbols",
+   "desc": "RP2350A, core regulator, crystal, QSPI flash, SWD, buttons, headers \u00b7 40 symbols",
    "file": "comms-01_mcu.svg",
    "source": "01_mcu.kicad_sch",
    "paper": "A3",
    "page": "2",
-   "symbols": 37,
+   "symbols": 40,
    "size_mm": [
     419.989,
     297.0022
@@ -33,12 +33,12 @@
   {
    "sheet": "02_link",
    "title": "60 GHz link",
-   "desc": "ST60A3H1, 1.8 V translator, eUSB2 repeater, link LED \u00b7 21 symbols",
+   "desc": "ST60A3H1, 1.8 V translator, eUSB2 repeater, link LED \u00b7 25 symbols",
    "file": "comms-02_link.svg",
    "source": "02_link.kicad_sch",
    "paper": "A3",
    "page": "3",
-   "symbols": 21,
+   "symbols": 25,
    "size_mm": [
     419.989,
     297.0022

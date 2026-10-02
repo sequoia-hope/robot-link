@@ -281,7 +281,7 @@ class Build:
         if comp.note:
             fp.SetField("comms_role", comp.note)
             fp.GetFieldByName("comms_role").SetVisible(False)
-        if comp.ref.startswith("H"):
+        if comp.lib_id.startswith("Mechanical:"):
             fp.SetExcludedFromBOM(True)
             fp.SetExcludedFromPosFiles(True)
         # The board is too dense for designators in silk: they go to the fab
@@ -291,6 +291,11 @@ class Build:
         r.SetTextSize(pcbnew.VECTOR2I(mm(0.5), mm(0.5))); r.SetTextThickness(mm(0.08))
         r.SetPosition(V(x, y))
         fp.Value().SetVisible(False)
+        # the library's 0.12 mm silk is under what JLCPCB says it prints
+        for g in fp.GraphicalItems():
+            if g.GetLayer() in (pcbnew.F_SilkS, pcbnew.B_SilkS) and isinstance(g, pcbnew.PCB_SHAPE) \
+                    and g.GetWidth() < mm(0.15):
+                g.SetWidth(mm(0.15))
         self.b.Add(fp)
         self.fps[comp.ref] = fp
         return fp
@@ -417,16 +422,24 @@ def outline(B):
 
 
 # ----------------------------------------------------- the ST60's ground ----
+ST_VIAS = Path(__file__).with_name("st_b2379a_vias.json")
+FENCE_REACH = 1.6              # how far outside the moat ST's vias are taken, below it
+FENCE_SIDE = 2.1               # ... and either side of it
+
 def antenna_ground(B):
     """The copper ST puts round the ST60A3H1 on the X-NUCLEO-60K1A1.
 
-    Measured off that board's top-copper Gerber (B2379A.GTL): a ground island
-    5.0 x 6.0 mm centred on the package, a ring 0.5 mm wide with no copper
-    round it, the ring's outer edge on the board edge at the patch end, and
-    ground vias fencing both sides of the ring. The inner layers are solid
-    under all of it. The data sheet's pattern and link budget are measured on
-    that board ("the antenna radiated performance can vary for different PCB
-    implementations", DS14598 sec. 6), so it is copied rather than improved.
+    Measured off that board's Gerbers (B2379A): a ground island 5.0 x 6.0 mm
+    centred on the package, a ring 0.5 mm wide with no copper round it, the
+    ring's outer edge on the board edge at the patch end, and ground vias --
+    about fifty in the island, half a millimetre apart, and two staggered
+    rows fencing the outside of the ring. The inner layers are solid under
+    all of it. The data sheet's pattern and link budget are measured on that
+    board ("the antenna radiated performance can vary for different PCB
+    implementations", DS14598 sec. 6), so it is copied rather than improved:
+    the vias are ST's own, hole for hole (st_b2379a_vias.json), each one put
+    in wherever this board's copper leaves it room. They go in before
+    anything is routed, and locked, so the router works round them.
     """
     cx, cy = PL.ST60
     hx, hy = PL.ISLAND
@@ -440,35 +453,124 @@ def antenna_ground(B):
                            rect(cx - hx - m, cy + hy, cx + hx + m, cy + hy + m),
                            rect(cx - hx - m, cy - hy - m, cx + hx + m, cy - hy))):
         B.keepout(f"antenna moat {k + 1}", ["F.Cu"], r)
-    # the island's own vias to In1: down its far side and along its ends,
-    # wherever one is legal (the pair on the back passes under one corner)
     M = CU.Model(B.b, OX, OY)
-    spots = [(cx - 2.0, cy - 2.5 + k) for k in range(6)] \
-          + [(cx + x, cy + s * 2.5) for s in (-1, 1) for x in (-1.0, 0.0, 1.0, 2.0)]
-    for x, y in spots:
-        if M.via_ok("GND", x, y, ring_ok=True):
-            B.via("GND", x, y)
-            M.add_via("GND", x, y, *VIA)
+    r = VIA[0] / 2
+    n = {"island": 0, "fence": 0, "left out": 0}
+    for dx, dy in json.loads(ST_VIAS.read_text())["vias"]:
+        x, y = round(cx + dx, 3), round(cy + dy, 3)
+        inside = abs(dx) + r <= hx and abs(dy) + r <= hy
+        outside = (abs(dx) >= hx + m + r or dy >= hy + m + r) \
+            and abs(dx) <= hx + m + FENCE_SIDE and dy <= hy + m + FENCE_REACH
+        if not (inside or outside):
+            continue                    # in the ring, or beyond the fence
+        # the way the ST60's signals go once they are through the ring: down
+        # the right of the island and in under it to the translator
+        if outside and BUNDLE[0] <= x <= BUNDLE[2] and BUNDLE[1] <= y <= BUNDLE[3]:
+            n["left out"] += 1
+            continue
+        # ST's holes are as little as 0.5 mm apart; these keep the board's
+        # rule. One that does not fit where ST has it may fit a step aside.
+        for ox, oy in [(0, 0)] + [(i * d, j * d) for d in (0.05, 0.1, 0.15, 0.2, 0.25)
+                                  for i, j in ((1, 0), (-1, 0), (0, 1), (0, -1))]:
+            vx, vy = round(x + ox, 3), round(y + oy, 3)
+            still = abs(vx - cx) + r <= hx and abs(vy - cy) + r <= hy if inside else \
+                abs(vx - cx) >= hx + m + r or vy - cy >= hy + m + r
+            if still and M.via_ok("GND", vx, vy, ring_ok=True, hole_hole=0.25 + 0.01):
+                B.via("GND", vx, vy)
+                M.add_via("GND", vx, vy, *VIA)
+                n["island" if inside else "fence"] += 1
+                break
+        else:
+            n["left out"] += 1
     # nothing but the ST60 stands inside the ring, and nothing tall near it
     B.circle("Dwgs.User", PL.PATCH[0], PL.PATCH[1], 1.0, 0.08)
     B.line("Dwgs.User", PL.PATCH[0] - 1.6, PL.PATCH[1], PL.PATCH[0] + 1.6, PL.PATCH[1], 0.08)
     B.line("Dwgs.User", PL.PATCH[0], PL.PATCH[1] - 1.6, PL.PATCH[0], PL.PATCH[1] + 1.6, 0.08)
+    return n
+
+
+# The ST60's signal balls, in the order they stand down column 1, and where
+# each is handed to the router: a via just outside the ring, in three
+# staggered columns. RF_EN has none -- it is laid all the way to its divider.
+ST_BALLS = ["M2", "K1", "J1", "H1", "G1", "F1", "E1", "D1", "B2"]
+ANCHOR_X = (3.45, 4.0, 4.55)
+ANCHOR_COL = {0: 0, 1: 1, 2: 2, 4: 0, 5: 1, 6: 2, 7: 1, 8: 0}
+ANCHOR_PITCH = 0.45
+BUNDLE = (3.05, 5.6, 5.3, 8.6)          # kept free of fence vias for the way down to U6
+
+def st_anchors():
+    """[(net, x, y)]: the vias the ST60's signals are handed to the router on."""
+    nets = next(c for c in CIR.board() if c.ref == "U4").nets
+    cy = PL.ST60[1]
+    return [(nets[ball], ANCHOR_X[ANCHOR_COL[k]], round(cy + (k - 4) * ANCHOR_PITCH, 4))
+            for k, ball in enumerate(ST_BALLS) if k in ANCHOR_COL]
 
 
 def st60_copper(B):
-    """What cannot be left to a router inside a 0.4 mm ball field.
+    """What cannot be left to a router inside a 0.4 mm ball field, laid the
+    way ST's own board has it (B2379A, top copper).
 
-    The ST60's inner balls face a gap in the middle of the package (rows D
-    to K exist only in column 1), and everything here happens in that gap:
-
+      - The nine signal balls stand in column 1, on the side that faces
+        away from nothing: each leaves straight out through the ring, side
+        by side at the balls' own pitch, and nothing else crosses the ring
+        on the front. Outside it they open to 0.45 mm and each ends on a
+        via, which is where the router takes over.
+      - The supply balls, VDD_1V8 (C3) and VDD_IO (L3), are joined in the
+        gap in the middle of the package and leave as one track along the
+        top of the bundle, to their capacitors and the 0 R link.
       - eUSB2: TX_IP is tied to RX_OP and TX_IN to RX_ON (DS fig. 4, note 1).
         C4/L4 and C5/L5 are in line, so each tie is one straight track across
         the gap, with a via in it to take the pair out on the back.
-      - VDD_1V8 (C3) and VDD_IO (L3): a via each into the ST_VDD plane on In2.
-
-    The pair then runs on B.Cu, under the island and out to the repeater.
+      - The ground balls join the island by a short neck each, not by the
+        pour closing round them: every land is then the same 0.25 mm of
+        copper inside its mask opening.
     """
     P = lambda n: B.pad("U4", n)
+    cx, cy = PL.ST60
+    x_out = cx + PL.ISLAND[0] + PL.MOAT             # the ring's outer edge
+    w = 0.125
+
+    for pad in B.fps["U4"].Pads():
+        pad.SetLocalZoneConnection(pcbnew.ZONE_CONNECTION_NONE)
+    for ball in ("N3", "N4", "N5", "A3", "A4", "A5"):
+        x, y = P(ball)
+        B.track("GND", "F.Cu", [(x, y), (x, y + (0.47 if y > cy else -0.47))], 0.15)
+    for ball in ("C6", "L6"):
+        x, y = P(ball)
+        B.track("GND", "F.Cu", [(x, y), (x - 0.48, y)], 0.15)
+
+    # -- signals
+    for k, ball in enumerate(ST_BALLS):
+        net = next(p.GetNetname() for p in B.fps["U4"].Pads() if p.GetNumber() == ball)
+        bx, by = P(ball)
+        yk = round(cy + (k - 4) * ANCHOR_PITCH, 4)
+        fan = [(bx, by), (x_out, by), (x_out + abs(yk - by), yk)]
+        if k in ANCHOR_COL:
+            xv = ANCHOR_X[ANCHOR_COL[k]]
+            B.track(net, "F.Cu", fan + [(xv, yk)], w)
+            B.via(net, xv, yk)
+        else:
+            # RF_EN: on between the vias, down past the 0 R link's pad, to
+            # the divider's two pads (which face it)
+            r21, r22 = B.pad("R21", "2"), B.pad("R22", "1")
+            xs = 5.0
+            B.track(net, "F.Cu", fan + [(xs - 0.6, yk), (xs, yk + 0.6), (xs, r21[1] - (r21[0] - xs)),
+                                        r21, r22], w)
+
+    # -- supply
+    (xl, yl), (xc, yc) = P("L3"), P("C3")
+    xg = xl + 0.5                                    # up the gap, between the P via and column 1
+    B.track("ST_VDD", "F.Cu", [(xl, yl), (xg, yl + 0.5), (xg, yc - 0.5), (xc, yc)], w)
+    y_in, y_out = 1.5, 1.2                           # along the top of the bundle; above the first via
+    xe = xl + 0.39
+    c22, c21, r20 = B.pad("C22", "1"), B.pad("C21", "1"), B.pad("R20", "2")
+    B.track("ST_VDD", "F.Cu", [(xl, yl), (xe, yl - 0.15), (xe, y_in + 0.22), (xe + 0.22, y_in),
+                               (1.6, y_in)], w)
+    B.track("ST_VDD", "F.Cu", [(1.6, y_in), (x_out - 0.25, y_in), (x_out + 0.05, y_out),
+                               (c22[0] - 0.42, y_out), (c22[0] - 0.42 + (y_out - c22[1]), c22[1]), c22], 0.2)
+    B.track("ST_VDD", "F.Cu", [c22, c21, r20], 0.3)
+
+    # -- eUSB2
     w = 0.15
     # N: C5 - L5, straight, the via on the line
     (xn, y5c), (_, y5l) = P("C5"), P("L5")
@@ -482,41 +584,54 @@ def st60_copper(B):
     B.track("EUSB_P", "F.Cu", [(xp, lo), (xp, yv - 0.55), (xv, yv - 0.235), (xv, yv + 0.235),
                                (xp, yv + 0.55), (xp, hi)], w)
     B.via("EUSB_P", xv, yv)
-    # supply balls: up into the gap, 45 degrees to a via by column 1
-    for ball in ("C3", "L3"):
-        x, y = P(ball)
-        s = 1 if y < yv else -1                 # toward the middle of the package
-        vx, vy = x + 0.465, y + s * 0.58
-        B.track("ST_VDD", "F.Cu", [(x, y), (x, y + s * 0.115), (vx, vy)], w)
-        B.via("ST_VDD", vx, vy)
 
-    # the pair on the back: down from the vias, left under the island, down
-    # the left of the moat to the repeater's eDP/eDN (on U5's top edge)
-    gap, tw = 0.15, 0.2
-    pitch = gap + tw
+    # The pair on the back: straight down out of the island (the far side
+    # from the patch, where a gap in the fence costs least), west below the
+    # fence, up past its corner and down onto the repeater's eDP/eDN, which
+    # are on U5's top edge. N is the west track of the two and so the north
+    # one after the turn: it passes over P's via to reach its own.
+    pitch = TW + GAP
     ex_n, ey = B.pad("U5", "3")                 # eDN
     ex_p, _ = B.pad("U5", "2")                  # eDP
-    y_run = PL.ST60[1] + PL.ISLAND[1] - 0.35    # the westward run, under the island's edge
-    vn, vp = (ex_n - 0.3, ey - 1.075), (ex_p + 0.1, ey - 1.075)   # where it comes back up
-    # N is the inside track of both turns ...
-    B.track("EUSB_N", "B.Cu", [(xn, yv), (xn, y_run - 0.75), (xn - 0.75, y_run),
-                               (vn[0] + (vn[1] - 0.9 - y_run), y_run),
-                               (vn[0], vn[1] - 0.9), vn], tw)
-    # ... and P runs one pitch outside it, leaving a little early for its via
-    xp1 = xn + pitch
-    a = (xp1, y_run - 0.75 + pitch * (2 ** 0.5 - 1))          # end of its southward leg
-    b = (a[0] - (y_run + pitch - a[1]), y_run + pitch)        # start of its westward leg
-    c_x = vp[0] + ((vp[1] - 0.9) - (y_run + pitch))           # where it turns south-west
-    B.track("EUSB_P", "B.Cu", [(xv, yv), (xv, yv + 0.8), (xp1, yv + 0.8 + (xv - xp1)), a, b,
-                               (c_x, y_run + pitch), (vp[0], vp[1] - 0.9), vp], tw)
+    vn, vp = (ex_n - 0.3, ey - 1.075), (ex_p + 0.1, ey - 1.075)
+    xc_ = xn + pitch / 2                        # the pair's centre line
+    y_w = cy + PL.ISLAND[1] + PL.MOAT + FENCE_REACH + 0.12          # west, below the fence
+    y_t = vp[1] - 0.53 - pitch / 2                                  # west again, above the vias
+    x_e = vp[0] + 0.1                                               # where the lanes end
+    x_c = x_e + 0.13 + (y_w - y_t)                                  # where it turns up
+    c = 0.6
+    centre = [(xc_, yv + 1.1), (xc_, y_w - c), (xc_ - c, y_w), (x_c, y_w),
+              (x_c - (y_w - y_t), y_t), (x_e, y_t)]
+    line = CU.LineString(centre)
+    lanes = {}
+    for net, side in (("EUSB_N", 1), ("EUSB_P", -1)):
+        lane = list(line.offset_curve(side * pitch / 2, join_style=2, mitre_limit=5).coords)
+        lanes[net] = lane if _near(lane[0], centre[0]) else lane[::-1]
+    ln, lp = lanes["EUSB_N"], lanes["EUSB_P"]
+    if ln[0][0] > lp[0][0]:                     # N is the one over its own via
+        ln, lp = lp, ln
+    B.track("EUSB_N", "B.Cu", [(xn, yv)] + ln + [(vn[0] + 0.3, ln[-1][1]), (vn[0], ln[-1][1] + 0.3), vn], TW)
+    B.track("EUSB_P", "B.Cu", [(xv, yv), (xv, yv + 0.7), (lp[0][0], yv + 0.7 + (xv - lp[0][0]))] + lp
+            + [(vp[0], lp[-1][1] + 0.1), vp], TW)
     B.via("EUSB_N", *vn)
     B.via("EUSB_P", *vp)
     B.track("EUSB_N", "F.Cu", [vn, (ex_n, vn[1] + 0.3), (ex_n, ey)], w)
     B.track("EUSB_P", "F.Cu", [vp, (ex_p, vp[1] + 0.1), (ex_p, ey)], w)
 
+    # -- +1V8 to J2's pin 1, which stands outside the 1.8 V plane (the USB
+    # pair on the back wants +3V3 under it there): a track to a via inside it
+    j = B.pad("J2", "1")
+    v = (-8.0, 8.3)
+    B.track("+1V8", "F.Cu", [j, (j[0] + (j[1] - v[1]), v[1]), v], 0.3)
+    B.via("+1V8", *v)
+
 
 # ------------------------------------------------------------- USB pairs ----
-TW, GAP = 0.2, 0.16            # the USB class: about 90 ohm differential on this stack (0.01 over the clearance, for rounding)
+# The USB pairs on the back, over In2 0.21 mm away: 0.28 mm wide, 0.16 mm
+# apart, which a field solver puts at 89 ohm differential (0.2 / 0.16 was
+# 100). On the front, between pads, they are 0.2 mm.
+TW, GAP = 0.28, 0.16
+WF = 0.2
 RPT_X = -9.3                   # where the repeater's USB pair comes down to it, on the back
 
 def usb_copper(B):
@@ -535,11 +650,12 @@ def usb_copper(B):
     other under the package.
 
     From U9 the pair drops to the back and runs up the left side of the
-    board between the header and the RP2350's ground vias, over the solid
-    +3V3 plane on In2, to come up between the repeater's two 3V3 capacitors.
+    board outside the header, over the +3V3 plane on In2 all the way (the
+    +1V8 plane stops short of it), to come up between the repeater's two
+    3V3 capacitors.
     """
     P = B.pad
-    w = TW
+    w = WF
     # -- connector to ESD
     b7, a6, a7, b6 = P("J1", "B7"), P("J1", "A6"), P("J1", "A7"), P("J1", "B6")
     y_pad = a6[1]
@@ -560,7 +676,19 @@ def usb_copper(B):
     # own ground pin shuts the fourth: a via on the end of that pad is the
     # only way in, and VBUS reaches it on the back.
     v5 = P("U8", "5")
-    B.via("VBUS", v5[0], v5[1] - 0.6)
+    vb = (v5[0], v5[1] - 0.6)
+    B.via("VBUS", *vb)
+    # The connector's two VBUS pads are either side of the data pads, and
+    # the short way between them is under its shell, which is grounded and
+    # sits on the board: 5 V under it would have solder mask for insulation
+    # and nothing else. They are joined on the back instead, through that
+    # same via.
+    for pad in ("A4", "A9"):
+        x, y = P("J1", pad)
+        v = (x + (0.41 if x > 0 else -0.41), y - 1.23)
+        B.track("VBUS", "F.Cu", [(x, y), (x, v[1] + 0.41), v], 0.3)
+        B.via("VBUS", *v)
+        B.track("VBUS", "B.Cu", [v, (v[0], vb[1]), vb], 0.3)
 
     # -- the switch's 2D-/2D+ (top edge) to the repeater's DN/DP (bottom edge)
     s_m, s_p = P("U9", "4"), P("U9", "3")
@@ -586,7 +714,7 @@ def usb_copper(B):
     ya = v_p[1] - 0.65                                      # westward, above the last pin
     xb = RPT_X + 0.55                                       # down, inside the header
     yc = hy1 + 1.5                                          # westward, below the last pin
-    xd = hx - 1.72                                          # up the edge
+    xd = hx - 1.41                                          # up the edge: 0.2 mm off the pads, 0.8 mm in from the edge
     ye = hy0 - 1.45                                         # eastward, above the first pin
     xf = RPT_X                                              # down to U5
     yg = (e_m[1] + 0.95) + pitch / 2                        # eastward to the vias
@@ -603,7 +731,7 @@ def usb_copper(B):
         # into the lanes from U9's vias, out of them to U5's
         y_lane = lane[-1][1]
         tail = [(via1[0] - (y_lane - via1[1] - 0.6), y_lane), (via1[0], via1[1] + 0.6), via1]
-        B.track(net, "B.Cu", [via0] + lane[:-1] + tail, w)
+        B.track(net, "B.Cu", [via0] + lane[:-1] + tail, TW)
     B.via("RPT_DM", *e_m)
     B.via("RPT_DP", *e_p)
     B.track("RPT_DM", "F.Cu", [e_m, (r_m[0], e_m[1] - 0.48), r_m], w)
@@ -801,12 +929,9 @@ def planes(B):
     B.zone("GND", "ground plane In1", ["In1.Cu"], full, clearance=0.2)
     B.zone("GND", "ground pour F.Cu", ["F.Cu"], full, clearance=0.2, islands="drop")
     B.zone("GND", "ground pour B.Cu", ["B.Cu"], full, clearance=0.2, islands="drop")
-    # In2: +3V3 everywhere but under the antenna island, where it is the
-    # ST60's own supply (ST_VDD, +1V8 after the 0 R link), and over the
-    # 1.8 V parts of the link section (copper.V18_POLY)
+    # In2: +3V3 everywhere but over the link section, the antenna island
+    # included, where it is +1V8 (copper.V18_POLY)
     B.zone("+3V3", "+3V3 plane In2", ["In2.Cu"], full, clearance=0.2, islands="drop")
-    B.zone("ST_VDD", "ST_VDD plane In2", ["In2.Cu"], rect(*CU.ST_VDD_RECT), priority=5,
-           clearance=0.2, islands="drop")
     B.zone("+1V8", "+1V8 plane In2", ["In2.Cu"], CU.V18_POLY, priority=5, clearance=0.2,
            islands="drop")
 
@@ -814,6 +939,7 @@ def planes(B):
 # ------------------------------------------------------------- silkscreen ---
 SILK_NAME = {"VBUS": "5V", "+3V3": "3V3", "+1V8": "1V8", "CFG_SDA": "SDA", "CFG_SCL": "SCL",
              "RF_EN_GP": "RFEN", "ST_INT": "INT", "ST_LINK": "LINK"}
+SILK_FRONT = {"RFEN": "RF", "LINK": "LNK"}     # three letters at most fit a 2.54 mm pitch at 0.8 mm
 
 def silk(B):
     comps = {c.ref: c for c in CIR.board()}
@@ -831,15 +957,16 @@ def silk(B):
         for i in range(16):
             net = comps[ref].nets[str(i + 1)]
             label = SILK_NAME.get(net, net).replace("TUN_", "")
-            front = label[2:] if label.startswith("GP") else label
+            front = label[2:] if label.startswith("GP") else SILK_FRONT.get(label, label)
             y = y0 + i * 2.54
-            B.text("F.SilkS", front, x0 - side * 1.75, y, 0.6, rot=90)
-            B.text("B.SilkS", label, x0 + side * 1.5, y, 0.8,
+            B.text("F.SilkS", front, x0 - side * 1.78, y, 0.8, rot=90, thick=0.15)
+            B.text("B.SilkS", label, x0 + side * 1.5, y, 1.0, thick=0.15,
                    just="right" if side > 0 else "left", mirror=True)
         # pin 1: a bar across the end of the row
         B.line("F.SilkS", x0 - 0.9, y0 - 1.2, x0 + 0.9, y0 - 1.2, 0.15)
     B.text("B.SilkS", "comms rev A  RP2350A + ST60A3H1", 0, 30.0, 1.0, rot=90, mirror=True)
-    B.text("B.SilkS", "60 GHz ANTENNA THIS END - KEEP CLEAR", 0, 7.4, 0.7, mirror=True)
+    B.text("B.SilkS", "60 GHz ANTENNA THIS END", 0, 8.0, 1.0, thick=0.15, mirror=True)
+    B.text("B.SilkS", "KEEP CLEAR", 0, 9.6, 1.0, thick=0.15, mirror=True)
     # antenna axis: a tick each side of the moat on the front, on the patch's
     # line; on the back a target over the patch itself
     px, py = PL.PATCH
@@ -851,7 +978,7 @@ def silk(B):
     for label, x, y, rot in (("BOOT", 9.9, PL.PLACE["SW1"][1], 90), ("RUN", 9.9, PL.PLACE["SW2"][1], 90),
                              ("PWR", -10.8, PL.PLACE["D1"][1], 0), ("LED", -10.8, PL.PLACE["D3"][1], 0),
                              ("LINK", -7.2, 18.3, 0), ("SWD", 6.4, 54.2, 90)):
-        B.text("F.SilkS", label, x, y, 0.7, rot=rot)
+        B.text("F.SilkS", label, x, y, 0.8, rot=rot, thick=0.15)
 
 
 # ------------------------------------------------------------------ build ---
@@ -871,7 +998,9 @@ def build(path, taps=True):
     st60_copper(B)
     usb_copper(B)
     select_copper(B)
-    antenna_ground(B)
+    n_ant = antenna_ground(B)
+    print(f"       antenna ground, ST's vias: {n_ant['island']} in the island, "
+          f"{n_ant['fence']} fencing it, {n_ant['left out']} left out")
     silk(B)
     n_tap = CU.plane_taps(B, OX, OY) if taps else 0
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())

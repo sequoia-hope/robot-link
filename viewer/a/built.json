@@ -20,12 +20,12 @@
    {
     "sheet": "01_mcu",
     "title": "RP2350A",
-    "desc": "RP2350A, core regulator, crystal, QSPI flash, SWD, buttons, headers \u00b7 37 symbols",
+    "desc": "RP2350A, core regulator, crystal, QSPI flash, SWD, buttons, headers \u00b7 40 symbols",
     "file": "comms-01_mcu.svg",
     "source": "01_mcu.kicad_sch",
     "paper": "A3",
     "page": "2",
-    "symbols": 37,
+    "symbols": 40,
     "size_mm": [
      419.989,
      297.0022
@@ -34,12 +34,12 @@
    {
     "sheet": "02_link",
     "title": "60 GHz link",
-    "desc": "ST60A3H1, 1.8 V translator, eUSB2 repeater, link LED \u00b7 21 symbols",
+    "desc": "ST60A3H1, 1.8 V translator, eUSB2 repeater, link LED \u00b7 25 symbols",
     "file": "comms-02_link.svg",
     "source": "02_link.kicad_sch",
     "paper": "A3",
     "page": "3",
-    "symbols": 21,
+    "symbols": 25,
     "size_mm": [
      419.989,
      297.0022
@@ -79,13 +79,13 @@
   "thickness": 1.6,
   "plate": "#c8c8c8",
   "body": "body.svg",
-  "vias": 243,
+  "vias": 302,
   "nets": 80,
-  "footprints": 78,
-  "front": 78,
+  "footprints": 85,
+  "front": 85,
   "back": 0,
-  "tracks": 741,
-  "length_mm": 1257.4,
+  "tracks": 858,
+  "length_mm": 1395.4,
   "layers": [
    {
     "name": "F.Cu",
@@ -94,14 +94,14 @@
     "file": "f.svg",
     "color": "#C83434",
     "note": "Every part, and the signals. Top edge: the ST60A3H1 on its grounded island, with the copper-free ring round it that ST's own board has.",
-    "tracks": 575,
-    "length_mm": 769.8,
-    "pads": 355,
+    "tracks": 616,
+    "length_mm": 808.6,
+    "pads": 366,
     "zones": [
-     "+1V1",
-     "GND",
      "VREG_LX",
-     "+3V3"
+     "GND",
+     "+3V3",
+     "+1V1"
     ]
    },
    {
@@ -129,9 +129,8 @@
     "length_mm": 0.0,
     "pads": 51,
     "zones": [
-     "+1V8",
      "+3V3",
-     "ST_VDD"
+     "+1V8"
     ]
    },
    {
@@ -141,8 +140,8 @@
     "file": "b.svg",
     "color": "#4D7FC4",
     "note": "Ground, the USB pair up the left side from the connector's switch to the repeater, the eUSB2 pair under the island, and what the front had no room for.",
-    "tracks": 166,
-    "length_mm": 487.6,
+    "tracks": 242,
+    "length_mm": 586.9,
     "pads": 51,
     "zones": [
      "GND"
@@ -186,11 +185,14 @@
   "board": "comms.kicad_pcb",
   "generated": "2026-10-02",
   "glb": "board.glb",
-  "bytes": 3440612,
-  "kicad_bytes": 16059908,
-  "parts": 78,
-  "modelled": 70,
+  "bytes": 3782892,
+  "kicad_bytes": 17652820,
+  "parts": 85,
+  "modelled": 74,
   "no_model": [
+   "FID1",
+   "FID2",
+   "FID3",
    "H1",
    "H2",
    "H3",
@@ -218,8 +220,8 @@
    "U10"
   ],
   "why": {
-   "U9": "no such file",
-   "U10": "no such file"
+   "U10": "no such file",
+   "U9": "no such file"
   },
   "missing_models": [
    "${KICAD9_3DMODEL_DIR}/Package_DFN_QFN.3dshapes/Texas_UQFN-10_1.5x2mm_P0.5mm.step"
@@ -238,10 +240,10 @@
    "legacy": 3,
    "found": 0
   },
-  "triangles": 294013,
-  "primitives": 185
+  "triangles": 326561,
+  "primitives": 199
  },
- "when": "2026-10-02 01:31",
+ "when": "2026-10-02 02:23",
  "source": {
   "kind": "file",
   "pcb": "hardware/comms/comms.kicad_pcb",

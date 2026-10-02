@@ -165,9 +165,11 @@ def mcu(s):
             # the rails as flags too: sixteen names in a column read better
             # than names with supply symbols poking out between them
             s.label(p, stub=1, kind="global_label")
-    s.block("Mounting holes, M2.5", 108, 46, 150, 56)
+    s.block("Mounting holes M2.5, fiducials", 108, 44, 150, 58)
     for k in range(4):
-        s.place(f"H{k + 1}", 114 + 9 * k, 51, fields="below")
+        s.place(f"H{k + 1}", 114 + 9 * k, 48, fields="below")
+    for k in range(3):
+        s.place(f"FID{k + 1}", 114 + 9 * k, 54, fields="below")
 
     s.text(notes(
         "The RP2350A, its core regulator, crystal, flash and decoupling are Raspberry Pi's "
@@ -210,11 +212,15 @@ def link(s):
     # its supply: +1V8 through the 0 R link
     s.wire(u["C3"], (59.5, 30))
     s.wire(u["L3"], (60.5, 30))
-    s.wire((55, 30), (72, 30))
+    s.wire((55, 30), (68, 30))
     s.place("R20", 53.5, 30, rot=90, fields="above")
     s.power(s["R20"]["1"], "+1V8", stub=1)
-    for ref, x in (("C21", 64), ("C22", 68), ("C23", 72)):
+    for ref, x in (("C21", 64), ("C22", 68)):
         s.place(ref, x, 31.5, fields="right")
+    # pull-ups on the 1.8 V side, and the MODE_INT strap
+    for ref, x in (("R24", 75), ("R25", 80), ("R26", 85), ("R27", 90)):
+        s.place(ref, x, 29.5, rot=180, fields="right")
+    s.place("R31", 80, 48.5, fields="right")
     s.flag(s.g(57, 30), "ST_VDD", stub=1)
     for n in ("E1", "F1", "G1", "J1", "B2", "D1", "K1", "M2"):
         s.label(u[n], stub=1)
@@ -255,9 +261,11 @@ def link(s):
         "auto-direction translator to 3.3 V (TXS0108E here, ST2378E there), RF_EN by "
         "divider, the link LED off an NPN.",
         "The translator is off (LS_OE low) until the RP2350 enables it, so the ST60 powers "
-        "up with only its own straps on its pins. No pull-ups are fitted on the "
-        "configuration bus or the tunnel pins: ST leaves its own unfitted. A tunnelled I2C "
-        "bus wants pull-ups on J2/J3, at 3.3 V.",
+        "up with its own straps on its pins and R31 on MODE_INT. Pull-ups, 4k7 to 1.8 V, "
+        "on the configuration bus and on GPIO[2]/[3], the tunnelled SCL/SDA; any added on "
+        "the 3.3 V side (J2, J3) should be 8k2 or more.",
+        "Before turning +1V8 off: LS_OE low and RF_EN low. After turning it on: 2.25 ms "
+        "before either goes high.",
         "Configuration bus: ST60A3H1 at 0x60, PTN3222 at 0x43 (ADDR on +1V8)."),
         100, 57, size=1.27)
 
@@ -318,9 +326,9 @@ def usb_power(s):
     s.wire(v["1"], (86, 74))
     s.power(s.g(86, 74), "+3V3")
     s.place("C32", 90, 75.5, fields="left")
-    s.place("R15", 95, 75.5, fields="right")
-    s.wire(s["R15"]["2"], (99, 77), (99, 75), v["3"])
-    s.label(s.g(95, 77), "ST_PWR_EN", stub=1, d=(0, 1), text_dir=(1, 0))
+    s.place("R15", 96, 82, rot=180, fields="right")
+    s.wire(s["R15"]["2"], (99, 80.5), (99, 75), v["3"])
+    s.label(s.g(96, 80.5), "ST_PWR_EN", stub=1, d=(-1, 0))
     s.wire(v["5"], (116, 74))
     s.place("C33", 112, 75.5, fields="right")
     s.power(s.g(116, 74), "+1V8")
@@ -333,7 +341,8 @@ def usb_power(s):
         "CONN high: connector to repeater -- a host's USB goes over the air.",
         "MCU high: RP2350 to repeater -- the RP2350 is the device at the far end.",
         "Both high joins all three and is not a state to use.",
-        "ST_PWR_EN low turns the 1.8 V regulator off; it discharges its output, which is "
+        "ST_PWR_EN high turns the 1.8 V regulator on; it is pulled down, so the rail is off "
+        "until the RP2350 asks for it. Off, the regulator discharges its output, which is "
         "a power-on reset for the ST60A3H1."), 8, 93, size=1.27)
 
 

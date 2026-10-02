@@ -97,15 +97,25 @@ PLACE = {
     "U4": (*ST60, 180),            # row N toward the board edge, column 1 to the right
     "U1": (*U1, U1_ROT),
 
-    # -- the ST60's supply, left of the island, outside the moat
-    "C21": (-4.3, 5.0, 90),        # 100 n, VDD_1V8
-    "C22": (-4.3, 2.0, 90),        # 100 n, VDD_IO
-    "C23": (-5.6, 3.5, 90),        # 1 u
-    "R20": (-8.0, 7.15, 90),       # the 0 R link: +1V8 below it, ST_VDD above
+    # -- the ST60's supply, right of the island: it leaves the ball field as
+    #    a track along the top of the signal bundle (as on ST's board) and
+    #    meets its capacitors and the 0 R link in a column, ST_VDD pads west
+    "C22": (5.8, 1.0, 0),          # 100 n
+    "C21": (5.8, 1.95, 0),         # 100 n
+    "R20": (5.8, 2.9, 180),        # the 0 R link: ST_VDD west, +1V8 east
 
-    # -- RF_EN divider, right of the island where the bundle opens out
-    "R21": (6.4, 5.6, 0),
-    "R22": (6.4, 4.4, 0),
+    # -- RF_EN divider, below them, ST_RF_EN pads west
+    "R21": (5.85, 4.2, 180),
+    "R22": (5.85, 5.2, 0),
+
+    # -- pull-ups and the MODE_INT strap. GPIO[2]/[3]'s and the strap right
+    #    of the island, clear of H2's screw head; the configuration bus's on
+    #    the left, above the repeater that shares the bus
+    "R26": (8.3, 0.95, 0),
+    "R27": (7.25, 2.4, 270),       # its +1V8 pad beside the 0 R link's
+    "R31": (7.25, 4.4, 90),
+    "R24": (-6.8, 6.0, 90),
+    "R25": (-7.8, 6.0, 90),
 
     # -- translator, A side (1.8 V) toward the ST60, B side toward the RP2350
     "U6": (0.3, 13.6, 270),
@@ -115,7 +125,7 @@ PLACE = {
 
     # -- eUSB2 repeater, left of the translator; eDP/eDN on its top edge
     "U5": (-6.6, 9.9, 270),
-    "C26": (-4.1, 8.9, 90),        # VDD1V8 1 u
+    "C26": (-4.1, 8.9, 90),        # VDD1V8 470 n
     "C27": (-4.1, 10.8, 270),      # VDD1V8 100 p, its 1.8 V pad beside ADDR
     "C28": (-5.3, 12.5, 0),        # VDD3V3 1 u; the USB pair comes up between these two
     "C29": (-8.5, 12.5, 180),      # VDD3V3 100 p
@@ -132,7 +142,7 @@ PLACE = {
     "U7": (7.0, 9.6, 180),
     "C33": (5.9, 12.4, 270),
     "C32": (8.6, 12.4, 270),
-    "R15": (8.0, 6.9, 270),
+    "R15": (8.2, 6.75, 270),       # EN pull-down
 
     # -- flash, below and right of the RP2350, pads in the order the chip's
     #    QSPI pins come off its edge
@@ -177,6 +187,11 @@ PLACE = {
     "H2": (11.0, 3.8, 0),
     "H3": (-11.0, 59.6, 0),
     "H4": (11.0, 59.6, 0),
+
+    # -- fiducials: three, and not symmetric
+    "FID1": (-6.6, 2.2, 0),
+    "FID2": (-6.6, 60.7, 0),
+    "FID3": (6.6, 60.7, 0),
 }
 for _ref, ours, dx, dy, rot in REFERENCE:
     PLACE[ours] = in_chip(dx, dy, rot)

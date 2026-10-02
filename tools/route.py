@@ -399,8 +399,46 @@ def main():
     if len(sys.argv) > 2 and sys.argv[1] == "--step":
         name, args = sys.argv[2], sys.argv[3:]
         if name == "reset":
+            import gen_board as GB
             board = pcbnew.LoadBoard(args[0])
             gone = [t for t in board.GetTracks() if not t.IsLocked()]
+            for t in gone:
+                board.Remove(t)
+            # ... and back come the vias the ST60's signals are handed over
+            # on, where "tidy" took one out of a finished board
+            have = {(t.GetPosition().x, t.GetPosition().y) for t in board.GetTracks()
+                    if t.Type() == pcbnew.PCB_VIA_T}
+            back = 0
+            for net, x, y in GB.st_anchors():
+                p = pcbnew.VECTOR2I(mm(GB.OX + x), mm(GB.OY + y))
+                if (p.x, p.y) not in have:
+                    v = pcbnew.PCB_VIA(board)
+                    v.SetPosition(p); v.SetViaType(pcbnew.VIATYPE_THROUGH)
+                    v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
+                    v.SetWidth(pcbnew.F_Cu, mm(GB.VIA[0])); v.SetDrill(mm(GB.VIA[1]))
+                    v.SetNet(board.FindNet(net)); v.SetLocked(True)
+                    board.Add(v)
+                    back += 1
+            if gone or back:
+                fill(board)
+                save(board, args[0])
+            print("RESULT", json.dumps(len(gone)), flush=True)
+        elif name == "tidy":
+            # A via the router was given to start from and then left on the
+            # front, never going through it, is a hole for nothing: out.
+            import gen_board as GB
+            spots = {(round(x, 3), round(y, 3)) for _, x, y in GB.st_anchors()}
+            rep = drc(args[0], WORK / "tidy.json")
+            idle = set()
+            for v in rep.get("violations", ()):
+                if v["type"] == "via_dangling":
+                    for it in v["items"]:
+                        q = (round(it["pos"]["x"] - GB.OX, 3), round(it["pos"]["y"] - GB.OY, 3))
+                        if q in spots:
+                            idle.add((mm(it["pos"]["x"]), mm(it["pos"]["y"])))
+            board = pcbnew.LoadBoard(args[0])
+            gone = [t for t in board.GetTracks() if t.Type() == pcbnew.PCB_VIA_T
+                    and (t.GetPosition().x, t.GetPosition().y) in idle]
             for t in gone:
                 board.Remove(t)
             if gone:
@@ -474,7 +512,7 @@ def main():
         run_freerouting(dsn, ses, a.passes, a.timeout)
         n_t, n_v = _step("import", scratch, ses, pcb, pcb)
         unc, viol = summarise(drc(pcb, WORK / "drc.json"))
-        hard = {k: v for k, v in viol.items() if not k.startswith("silk")}
+        hard = {k: v for k, v in viol.items() if not k.startswith("silk") and k != "via_dangling"}
         print(f"attempt {attempt}: {n} nets, {n_t} tracks and {n_v} vias back; "
               f"{unc} unconnected {sorted(open_nets(json.loads((WORK / 'drc.json').read_text())))}; "
               f"violations {hard or 'none'}")
@@ -489,7 +527,7 @@ def main():
             run_freerouting(dsn, ses, a.passes, a.timeout)
             _step("import", scratch, ses, pcb, pcb)
             unc, viol = summarise(drc(pcb, WORK / "drc.json"))
-            hard = {k: v for k, v in viol.items() if not k.startswith("silk")}
+            hard = {k: v for k, v in viol.items() if not k.startswith("silk") and k != "via_dangling"}
             print(f"  again, {len(opens)} open with {len(nets) - len(opens)} neighbours "
                   f"({n2} nets): {unc} unconnected "
                   f"{sorted(open_nets(json.loads((WORK / 'drc.json').read_text())))}; violations {hard or 'none'}")
@@ -502,8 +540,11 @@ def main():
     shutil.copyfile(best, pcb)
     # ground stitching goes in last, round what the router did; unlocked, so
     # the next run takes it out with the router's tracks and puts it back
-    fence, grid = _step("stitch", pcb)
-    print(f"stitched: {fence} vias fencing the antenna, {grid} across the board")
+    idle = _step("tidy", pcb)
+    grid = _step("stitch", pcb)
+    if idle:
+        print(f"tidied: {idle} hand-over vias the router did not go through, removed")
+    print(f"stitched: {grid} ground vias across the board")
     rep = drc(pcb, WORK / "drc.json")
     unc, viol = summarise(rep)
     print(f"DRC: {unc} unconnected; violations {viol or 'none'}")

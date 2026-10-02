@@ -1667,6 +1667,86 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Mechanical:Fiducial"
+			(exclude_from_sim no)
+			(in_bom no)
+			(on_board yes)
+			(property "Reference" "FID"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Fiducial"
+				(at 0 3.175 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Fiducial Marker"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "fiducial marker"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Fiducial*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Fiducial_0_1"
+				(circle
+					(center 0 0)
+					(radius 1.27)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Mechanical:MountingHole"
 			(pin_names
 				(offset 1.016)
@@ -4691,7 +4771,7 @@
 		(property "Reference" "R9"
 			(at 170.1800 202.1840 90)
 			(effects (font (size 1.27 1.27))))
-		(property "Value" "1k"
+		(property "Value" "220R"
 			(at 170.1800 204.7240 90)
 			(effects (font (size 1.27 1.27))))
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric" (at 170.1800 207.0100 0)
@@ -4825,7 +4905,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:MountingHole")
-		(at 302.2600 130.8100 0)
+		(at 302.2600 123.1900 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -4833,14 +4913,14 @@
 		(dnp no)
 		(uuid "dabf0a19-32eb-58b7-86ef-95a75c6239fc")
 		(property "Reference" "H1"
-			(at 302.2600 133.9800 0)
+			(at 302.2600 126.3600 0)
 			(effects (font (size 1.27 1.27))))
 		(property "Value" "M2.5"
-			(at 302.2600 136.5200 0)
+			(at 302.2600 128.9000 0)
 			(effects (font (size 1.27 1.27))))
-		(property "Footprint" "MountingHole:MountingHole_2.7mm_M2.5" (at 302.2600 130.8100 0)
+		(property "Footprint" "MountingHole:MountingHole_2.7mm_M2.5" (at 302.2600 123.1900 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Datasheet" "~" (at 302.2600 130.8100 0)
+		(property "Datasheet" "~" (at 302.2600 123.1900 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(instances
 			(project "comms"
@@ -4852,7 +4932,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:MountingHole")
-		(at 325.1200 130.8100 0)
+		(at 325.1200 123.1900 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -4860,14 +4940,14 @@
 		(dnp no)
 		(uuid "66e1dd36-de9d-56a6-bd2d-91b85e53124d")
 		(property "Reference" "H2"
-			(at 325.1200 133.9800 0)
+			(at 325.1200 126.3600 0)
 			(effects (font (size 1.27 1.27))))
 		(property "Value" "M2.5"
-			(at 325.1200 136.5200 0)
+			(at 325.1200 128.9000 0)
 			(effects (font (size 1.27 1.27))))
-		(property "Footprint" "MountingHole:MountingHole_2.7mm_M2.5" (at 325.1200 130.8100 0)
+		(property "Footprint" "MountingHole:MountingHole_2.7mm_M2.5" (at 325.1200 123.1900 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Datasheet" "~" (at 325.1200 130.8100 0)
+		(property "Datasheet" "~" (at 325.1200 123.1900 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(instances
 			(project "comms"
@@ -4879,7 +4959,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:MountingHole")
-		(at 347.9800 130.8100 0)
+		(at 347.9800 123.1900 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -4887,14 +4967,14 @@
 		(dnp no)
 		(uuid "8a308336-74d8-51e0-9d41-ea6d2239c7b1")
 		(property "Reference" "H3"
-			(at 347.9800 133.9800 0)
+			(at 347.9800 126.3600 0)
 			(effects (font (size 1.27 1.27))))
 		(property "Value" "M2.5"
-			(at 347.9800 136.5200 0)
+			(at 347.9800 128.9000 0)
 			(effects (font (size 1.27 1.27))))
-		(property "Footprint" "MountingHole:MountingHole_2.7mm_M2.5" (at 347.9800 130.8100 0)
+		(property "Footprint" "MountingHole:MountingHole_2.7mm_M2.5" (at 347.9800 123.1900 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Datasheet" "~" (at 347.9800 130.8100 0)
+		(property "Datasheet" "~" (at 347.9800 123.1900 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(instances
 			(project "comms"
@@ -4906,7 +4986,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:MountingHole")
-		(at 370.8400 130.8100 0)
+		(at 370.8400 123.1900 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -4914,19 +4994,100 @@
 		(dnp no)
 		(uuid "e667a2a2-0337-5f1a-9e0c-f4c419fbfed0")
 		(property "Reference" "H4"
-			(at 370.8400 133.9800 0)
+			(at 370.8400 126.3600 0)
 			(effects (font (size 1.27 1.27))))
 		(property "Value" "M2.5"
-			(at 370.8400 136.5200 0)
+			(at 370.8400 128.9000 0)
 			(effects (font (size 1.27 1.27))))
-		(property "Footprint" "MountingHole:MountingHole_2.7mm_M2.5" (at 370.8400 130.8100 0)
+		(property "Footprint" "MountingHole:MountingHole_2.7mm_M2.5" (at 370.8400 123.1900 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
-		(property "Datasheet" "~" (at 370.8400 130.8100 0)
+		(property "Datasheet" "~" (at 370.8400 123.1900 0)
 			(effects (font (size 1.27 1.27)) (hide yes)))
 		(instances
 			(project "comms"
 				(path "/8132f9b4-61be-5b7f-9744-e0828e24db53/1ba61b7e-b878-52da-84e3-0f73bc410a8e"
 					(reference "H4") (unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:Fiducial")
+		(at 302.2600 138.4300 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "c8a094ef-a297-5e75-b12b-8fa44dd7c1d5")
+		(property "Reference" "FID1"
+			(at 302.2600 141.6000 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "Fiducial"
+			(at 302.2600 144.1400 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "Fiducial:Fiducial_1mm_Mask2mm" (at 302.2600 138.4300 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "~" (at 302.2600 138.4300 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(instances
+			(project "comms"
+				(path "/8132f9b4-61be-5b7f-9744-e0828e24db53/1ba61b7e-b878-52da-84e3-0f73bc410a8e"
+					(reference "FID1") (unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:Fiducial")
+		(at 325.1200 138.4300 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "7bef3558-1d5d-524c-ae81-2061263afd5a")
+		(property "Reference" "FID2"
+			(at 325.1200 141.6000 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "Fiducial"
+			(at 325.1200 144.1400 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "Fiducial:Fiducial_1mm_Mask2mm" (at 325.1200 138.4300 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "~" (at 325.1200 138.4300 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(instances
+			(project "comms"
+				(path "/8132f9b4-61be-5b7f-9744-e0828e24db53/1ba61b7e-b878-52da-84e3-0f73bc410a8e"
+					(reference "FID2") (unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:Fiducial")
+		(at 347.9800 138.4300 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "3f8770b4-5d73-53ae-8a36-0e238430ae55")
+		(property "Reference" "FID3"
+			(at 347.9800 141.6000 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Value" "Fiducial"
+			(at 347.9800 144.1400 0)
+			(effects (font (size 1.27 1.27))))
+		(property "Footprint" "Fiducial:Fiducial_1mm_Mask2mm" (at 347.9800 138.4300 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "~" (at 347.9800 138.4300 0)
+			(effects (font (size 1.27 1.27)) (hide yes)))
+		(instances
+			(project "comms"
+				(path "/8132f9b4-61be-5b7f-9744-e0828e24db53/1ba61b7e-b878-52da-84e3-0f73bc410a8e"
+					(reference "FID3") (unit 1)
 				)
 			)
 		)
@@ -6464,11 +6625,11 @@
 		(at 288.2900 30.4800 0)
 		(effects (font (size 2.0 2.0) (bold yes)) (justify left bottom))
 		(uuid "419cd9a0-35ee-553a-9b13-49e62d9a4daa"))
-	(rectangle (start 287.0200 118.1100) (end 393.7000 143.5100)
+	(rectangle (start 287.0200 113.0300) (end 393.7000 148.5900)
 		(stroke (width 0.1524) (type dash) (color 72 72 72 1))
 		(fill (type none)) (uuid "d0f025a0-0e80-50b7-93ff-ead42183b7f9"))
-	(text "Mounting holes, M2.5" (exclude_from_sim no)
-		(at 288.2900 116.8400 0)
+	(text "Mounting holes M2.5, fiducials" (exclude_from_sim no)
+		(at 288.2900 111.7600 0)
 		(effects (font (size 2.0 2.0) (bold yes)) (justify left bottom))
 		(uuid "bfa0812d-218a-546b-ae5a-8f2d052b4a0a"))
 	(text "The RP2350A, its core regulator, crystal, flash and decoupling\nare Raspberry Pi's RP2350A minimal design (RP-006440), part for\npart; the crystal is a 2520 with 27 p where that has an ABM8 and\n15 p.\nGPIO: 0-7 right-hand header. 8/9 USB path selects. 10 RF_EN. 11\n1.8 V enable. 12/13 tunnelled SDA/SCL (I2C0). 14 LINK_STATUS. 15\nMODE_INT. 16/17 tunnelled TXD/RXD (UART0). 18/19 configuration\nbus (I2C1). 20 translator enable. 21-24, 26-29 left-hand header.\n25 LED.\nThe headers carry the 3.3 V side of every line the ST60 takes\nfrom a host, so a host that is not the RP2350 can run the link." (exclude_from_sim no)

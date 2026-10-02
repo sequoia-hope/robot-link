@@ -1,5 +1,14 @@
 {
   "components": {
+    "FID1": {
+      "dnpReason": "A fiducial mark: there is no part."
+    },
+    "FID2": {
+      "dnpReason": "A fiducial mark: there is no part."
+    },
+    "FID3": {
+      "dnpReason": "A fiducial mark: there is no part."
+    },
     "H1_1": {
       "dnpReason": "A mounting hole: there is no part."
     },
