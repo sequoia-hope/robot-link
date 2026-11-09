@@ -50,8 +50,10 @@ PCB = HW / f"{NAME}.kicad_pcb"
 PRO = HW / f"{NAME}.kicad_pro"
 KFP = Path("/usr/share/kicad/footprints")
 PROJ_FP = ROOT / "hardware/parts/comms.pretty"
-RPI_REF = Path("/home/sequoia/pcb/RP-006440-DD-2-RP2350A Minimal Board Kicad archive"
-               "/RP2350_60QFN_minimal.kicad_pcb")
+# Raspberry Pi's RP2350A minimal design archive, unpacked beside this repo or at $RPI_REF_DIR
+RPI_REF = (Path(os.environ.get("RPI_REF_DIR",
+                               ROOT.parent / "RP-006440-DD-2-RP2350A Minimal Board Kicad archive"))
+           / "RP2350_60QFN_minimal.kicad_pcb")
 uid = CIR._uid
 
 # The board's origin (middle of the top edge) on the KiCad page.

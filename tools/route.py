@@ -49,7 +49,8 @@ ROOT = Path(__file__).resolve().parent.parent
 HW = ROOT / "hardware" / "comms"
 BOARD = HW / "comms.kicad_pcb"
 WORK = HW / ".route"
-JAR = Path("/home/sequoia/Software/magnet/route/freerouting-2.2.4.jar")
+JAR = Path(os.environ.get("FREEROUTING_JAR",
+                         Path.home() / "Software/magnet/route/freerouting-2.2.4.jar"))
 mm = pcbnew.FromMM
 SIGNAL = [pcbnew.F_Cu, pcbnew.In2_Cu, pcbnew.In3_Cu, pcbnew.B_Cu]     # where the router may lay a track
 

@@ -16,13 +16,16 @@ Each drawn symbol is a box, its pins on the side they are wired from on the
 sheets (the ST60 between the repeater on its left and the translator on its
 right), supplies on top, ground underneath.
 """
+import os
 from pathlib import Path
 
 import sexp
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "hardware/parts/comms.kicad_sym"
-SERVODRIVE = Path("/home/sequoia/pcb/servodrive/hardware/parts/servodrive.kicad_sym")
+# servodrive checked out beside this repo, or wherever $SERVODRIVE_DIR points
+SERVODRIVE = (Path(os.environ.get("SERVODRIVE_DIR", ROOT.parent / "servodrive"))
+              / "hardware/parts/servodrive.kicad_sym")
 
 U = 2.54
 F = "(effects (font (size 1.27 1.27)))"

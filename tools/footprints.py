@@ -18,13 +18,15 @@ Three are copied from servodrive's library, where they came from Raspberry
 Pi's RP2350A minimal design: the QFN-60 with its thermal vias, the polarised
 2016 inductor and the small-pad 0402.
 """
+import os
 import shutil
 import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "hardware/parts/comms.pretty"
-SERVODRIVE = Path("/home/sequoia/pcb/servodrive/hardware/parts")
+# servodrive checked out beside this repo, or wherever $SERVODRIVE_DIR points
+SERVODRIVE = Path(os.environ.get("SERVODRIVE_DIR", ROOT.parent / "servodrive")) / "hardware/parts"
 NS = uuid.UUID("5c0e60a3-0000-4000-8000-00000000f00d")
 def uid(*p): return str(uuid.uuid5(NS, "/".join(str(x) for x in p)))
 
